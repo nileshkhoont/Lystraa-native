@@ -4,11 +4,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LandingScreen from '../screens/LandingScreen';
 import LandingScreen2 from '../screens/LandingScreen2';
 import LandingScreen3 from '../screens/LandingScreen3';
-// import ProfileScreen from '../screens/profile/ProfileScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import CreateAccount from '../screens/auth/CreateAccount';
 import HomeScreen from '../screens/HomeScreen';
 import OldPasswordScreen from '../screens/auth/OldPasswordScreen';
+import PrivacyPolicyScreen from '../screens/profile/PrivacyPolicyScreen';
+import TermsConditionScreen from '../screens/profile/TermsConditionScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,11 +25,12 @@ const ScreenNavigation = () => {
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="Landing2" component={LandingScreen2} />
          <Stack.Screen name="Landing3" component={LandingScreen3} />
-         {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccount} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="OldPasswordScreen" component={OldPasswordScreen} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        <Stack.Screen name="TermsCondition" component={TermsConditionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

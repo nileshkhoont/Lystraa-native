@@ -6,27 +6,70 @@ import {
   TouchableOpacity,
   StyleSheet,
   Pressable,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MailSVG from '../../assets/onboarding/mail-icon.svg';
 import LockSVG from '../../assets/onboarding/lock-icon.svg';
+import { useLoginMutation } from '../../api/auth/authApi';
+import { validateEmail } from '../../utils/validation';
+import Eyeopen from '../../assets/onboarding/eyeopen.svg';
+import Eyeclose from '../../assets/onboarding/eyeclose.svg';
 
 const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
+  
+  const [login, { isLoading }] = useLoginMutation();
+
+  const handleLogin = async () => {
+    // Clear previous errors
+    setErrors({});
+
+    // Validate fields
+    const emailError = validateEmail(email);
+    const passwordError = password.trim() === '' ? ' Password is required' : '';
+
+    // Check if there are any errors
+    if (emailError || passwordError) {
+      setErrors({
+        email: emailError || undefined,
+        password: passwordError || undefined,
+      });
+      return;
+    }
+
+    // All validations passed, proceed with login
+    try {
+      const result = await login({ email, password }).unwrap();
+      
+      if (result.success) {
+        Alert.alert('Success', result.message);
+        navigation?.navigate('Home' as never);
+      }
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message || 'Invalid email or password. Please try again.';
+      Alert.alert('Login Failed', errorMessage);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back!</Text>
       <Text style={styles.subtitle}>
-        Enter your email to start shopping and get awesome deals today!
+        Enter Your Email To Start Shopping And Get Awesome Deals Today!
       </Text>
 
       <Text style={styles.label}>
         Email<Text style={styles.required}>*</Text>
       </Text>
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, errors.email && styles.inputError]}>
         <MailSVG height={20} width={20} style={styles.inputIcon} />
         <TextInput
           style={styles.input}
@@ -34,13 +77,17 @@ const Login = ({ navigation }: any) => {
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
         />
       </View>
+      {errors.email && (
+        <Text style={styles.errorText}>{errors.email}</Text>
+      )}
 
       <Text style={styles.label}>
-        New Password<Text style={styles.required}>*</Text>
+        Password<Text style={styles.required}>*</Text>
       </Text>
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, errors.password && styles.inputError]}>
         <LockSVG height={20} width={20} style={styles.inputIcon} />
         <TextInput
           style={styles.input}
@@ -49,23 +96,38 @@ const Login = ({ navigation }: any) => {
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
         />
-        <Pressable onPress={() => setShowPassword(!showPassword)}>
-          <Text style={styles.inputIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+        <Pressable
+          onPress={() => setShowPassword(!showPassword)}
+          style={styles.eyeButton}
+        >
+          {showPassword ? (
+            <Eyeopen width={20} height={20} />
+          ) : (
+            <Eyeclose width={20} height={20} />
+          )}
         </Pressable>
-      </View>
 
-      <TouchableOpacity onPress={()=>navigation.navigate('OldPasswordScreen' as never)}>
+      </View>
+      {errors.password && (
+        <Text style={styles.errorText}>{errors.password}</Text>
+      )}
+
+      <TouchableOpacity onPress={() => navigation.navigate('OldPasswordScreen' as never)}>
         <Text style={styles.forgot}>Forgot your password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation?.navigate('Home' as never)}>
+      <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
         <LinearGradient
           colors={['#004225', '#4C7A66']}
           start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}
-          style={styles.loginButton}
+          style={[styles.loginButton, isLoading && styles.disabledButton]}
         >
-          <Text style={styles.loginButtonText}>Log In</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.loginButtonText}>Log In</Text>
+          )}
         </LinearGradient>
       </TouchableOpacity>
 
@@ -141,11 +203,22 @@ const styles = StyleSheet.create({
   },
   forgot: {
     color: '#004225',
+    fontFamily: 'Manrope-Regular',
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 19,     // 120% of 16px ≈ 19px
     alignSelf: 'flex-start',
+    marginTop: 6,
     marginBottom: 18,
-    marginTop: 2,
-    fontSize: 13,
   },
+  eyeButton: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+
   loginButton: {
     backgroundColor: '#295C3C',
     borderRadius: 12,
@@ -189,6 +262,20 @@ const styles = StyleSheet.create({
     color: '#004225',
     fontWeight: '500',
     fontSize: 14,
+  },
+  inputError: {
+    borderColor: '#d32f2f',
+    borderWidth: 1.5,
+  },
+  errorText: {
+    color: '#d32f2f',
+    fontSize: 12,
+    marginTop: -4,
+    marginBottom: 4,
+    marginLeft: 4,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 

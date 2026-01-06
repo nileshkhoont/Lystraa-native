@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { Provider } from 'react-redux';
 import RNBootSplash from 'react-native-bootsplash';
 import SplashScreen from './src/screens/SplashScreen';
 import ScreenNavigation from './src/navigation/ScreenNavigation';
+import { store } from './src/app/store';
 import './svg.d.ts';
+
 const fetchInitialData = async () => {
   return new Promise<void>(resolve => setTimeout(() => resolve(), 5000));
 };
@@ -27,7 +30,11 @@ const App = () => {
       </View>
     );
   }
-  return <ScreenNavigation />;
+  return (
+    <Provider store={store}>
+      <ScreenNavigation />
+    </Provider>
+  );
 };
 
 const styles = StyleSheet.create({

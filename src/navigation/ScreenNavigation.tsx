@@ -10,7 +10,10 @@ import HomeScreen from '../screens/HomeScreen';
 import OldPasswordScreen from '../screens/auth/OldPasswordScreen';
 import PrivacyPolicyScreen from '../screens/profile/PrivacyPolicyScreen';
 import TermsConditionScreen from '../screens/profile/TermsConditionScreen';
-
+import Notification from '../screens/profile/Notification';
+import ChangePasswordScreen from '../screens/profile/ChangePassword';
+import ChangePasswordSuccess from '../screens/profile/ChangePasswordSuccess';
+import NeedHelp from '../screens/profile/NeedHelp';
 const Stack = createStackNavigator();
 
 const ScreenNavigation = () => {
@@ -31,6 +34,10 @@ const ScreenNavigation = () => {
         <Stack.Screen name="OldPasswordScreen" component={OldPasswordScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         <Stack.Screen name="TermsCondition" component={TermsConditionScreen} />
+        <Stack.Screen name="Notification" component={Notification} />
+        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+        <Stack.Screen name="ChangePasswordSuccess" component={ChangePasswordSuccess} />
+        <Stack.Screen name="NeedHelp" component={NeedHelp} />
       </Stack.Navigator>
     </NavigationContainer>
   );

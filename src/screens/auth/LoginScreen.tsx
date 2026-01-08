@@ -16,6 +16,7 @@ import { useLoginMutation } from '../../api/auth/authApi';
 import { validateEmail } from '../../utils/validation';
 import Eyeopen from '../../assets/onboarding/eyeopen.svg';
 import Eyeclose from '../../assets/onboarding/eyeclose.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -49,7 +50,15 @@ const Login = ({ navigation }: any) => {
     try {
       const result = await login({ email, password }).unwrap();
       
-      if (result.success) {
+      if (result.success && result.data?.token) {
+        // Store token in AsyncStorage
+        await AsyncStorage.setItem('token', result.data.token);
+        
+        // Store user data if needed
+        if (result.data.user) {
+          await AsyncStorage.setItem('user', JSON.stringify(result.data.user));
+        }
+        
         Alert.alert('Success', result.message);
         navigation?.navigate('Home' as never);
       }

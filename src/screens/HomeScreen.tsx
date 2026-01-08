@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
-  Dimensions,
   Platform,
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import CardHeader from '../assets/images/cardheader.svg';
 import Arrow from '../assets/images/Arrow 1.svg';
 import Profile from '../assets/images/Profile.svg';
@@ -22,8 +22,6 @@ import Icon1 from '../assets/images/Icon1.svg';
 import Icon2 from '../assets/images/Icon2.svg';
 import Icon4 from '../assets/images/Icon4.svg';
 
-const { width } = Dimensions.get('window');
-
 export default function HomeScreen() {
   const navigation = useNavigation();
 
@@ -34,195 +32,234 @@ export default function HomeScreen() {
       <ScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
-
-
         {/* GREEN HEADER */}
         <View style={styles.headerOuter}>
-          <CardHeader width={width} height={300} />
+          <CardHeader width={420} height={220} />
 
-          {/* Back + Profile */}
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <View style={styles.backRow}>
-              <Arrow width={24} height={24} />
-              <Text style={styles.profileText}>Profile</Text>
+              <Arrow width={22} height={22} />
+              <Text style={styles.title}>Profile</Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* WHITE PROFILE SECTION */}
-        <View style={styles.profileContent}>
+        {/* MAIN WHITE CARD */}
+        <View style={styles.content}>
 
-          {/* Floating Avatar */}
-          <View style={styles.avatarWrapper}>
-            <Profile width={48} height={48} />
-          </View>
-
-          {/* Row */}
-          <View style={styles.profileRow}>
-            <View style={styles.profileInfo}>
-              <Text style={styles.userName}>Albert Stevano</Text>
-              <Text style={styles.userEmail}>albertstevano@gmail.com</Text>
+          {/* PROFILE ROW */}
+          <View style={styles.profileContent}>
+            <View style={styles.avatarWrapper}>
+              <Profile width={48} height={48} />
             </View>
 
-            <TouchableOpacity style={styles.editIcon}>
-              <EditIcon width={20} height={20} />
-            </TouchableOpacity>
-          </View>
-
-        </View>
-        {/* SETTINGS LIST */}
-        <View style={styles.settingsContainer}>
-
-          {/* General */}
-          <Text style={styles.sectionTitle}>General</Text>
-
-
-          <TouchableOpacity style={styles.row}>
-            <Text style={styles.rowText}>Notification</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.row}>
-            <Text style={styles.rowText}>Change Password</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => navigation.navigate('TermsCondition')}
-          >
-            <Text style={styles.rowText}>Terms & Condition</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          {/* Help & Feedback */}
-          <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Help & Feedback</Text>
-
-          <TouchableOpacity style={styles.row}>
-            <Text style={styles.rowText}>Need Help?</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => navigation.navigate('PrivacyPolicy')}
-          >
-            <Text style={styles.rowText}>Privacy Policy</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.row}>
-            <View style={styles.rateRow}>
-              <Text style={styles.rowText}>Rate Us</Text>
-
-              <View style={styles.starsContainer}>
-                <Frame123 width={100} height={100} />
-
+            <View style={styles.profileRow}>
+              <View style={styles.profileInfo}>
+                <Text style={styles.userName}>Albert Stevano</Text>
+                <Text style={styles.userEmail}>albertstevano@gmail.com</Text>
               </View>
+
+              <TouchableOpacity style={styles.editIcon}>
+                <EditIcon width={20} height={20} />
+              </TouchableOpacity>
             </View>
+          </View>
 
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
+          {/* EMPTY WHITE SPACE BELOW (like Notification screen) */}
+          {/* SETTINGS */}
+          <View style={styles.settingsContainer}>
 
+            <Text style={styles.sectionTitle}>General</Text>
 
-          <TouchableOpacity style={styles.row}>
-            <Text style={styles.rowText}>Log Out</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Notification')}>
+              <Text style={styles.rowText}>Notification</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.deleteRow}>
-            <Frame width={16} height={16} />
-            <Text style={styles.deleteText}>Delete Account</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('ChangePassword')}>
+              <Text style={styles.rowText}>Change Password</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
 
-        </View>
-        <View style={styles.bottomBar}>
-          <View style={styles.bottomTabs}>
-            <Icon1 width={60} height={60} />
-            <Icon2 width={60} height={60} />
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('TermsCondition')}>
+              <Text style={styles.rowText}>Terms & Condition</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
 
+            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Help & Feedback</Text>
 
-            <Big width={80} height={80} />
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('NeedHelp')}>
+              <Text style={styles.rowText}>Need Help?</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PrivacyPolicy')}>
+              <Text style={styles.rowText}>Privacy Policy</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
 
-            <Icon4 width={60} height={60} />
-            <Button width={60} height={60} />
+            <TouchableOpacity style={styles.row}>
+              <View style={styles.rateRow}>
+                <Text style={styles.rowText}>Rate Us</Text>
+                <Frame123 width={80} height={16} />
+              </View>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.rowText}>Log Out</Text>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deleteRow}>
+              <Frame width={16} height={16} />
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
       </ScrollView>
+
+      {/* BOTTOM TAB BAR */}
+      <View style={styles.bottomBar}>
+        <View style={styles.tabs}>
+          <Icon1 width={55} height={55} />
+          <Icon2 width={55} height={55} />
+          <Big width={80} height={80} />
+          <Icon4 width={55} height={55} />
+          <Button width={55} height={55} />
+        </View>
+      </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6F8F7',
   },
-  bottomTabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 36,
-  },
-
-  centerButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -36,                // floating like Figma
-
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 25,
-  },
-
 
   /* HEADER */
   headerOuter: {
-    width: '100%',
-    height: 300,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    height: 180,
     overflow: 'hidden',
     marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
   },
-  settingsContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingBottom: 40,
+
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+    left: 20,
   },
-  deleteRow: {
+
+  backRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
   },
 
-  deleteText: {
-    marginLeft: 8,          // space between icon and text
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#FF3B30',       // red like Figma
+  title: {
+    marginLeft: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
   },
 
+  /* WHITE CARD */
+  content: {
+    backgroundColor: '#fff',
+    marginTop: -20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    minHeight: 700,
+  },
+
+  /* PROFILE */
+  profileContent: {
+    paddingTop: 40,
+    paddingBottom: 10,
+    paddingHorizontal: 20,
+    position: 'relative',
+  },
+
+  avatarWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    position: 'absolute',
+    top: 30,
+    left: 20,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 6,
+    zIndex: 10,
+  },
+
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 64,
+  },
+
+  profileInfo: {
+    flex: 1,
+  },
+
+  userName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#00140B',
+    top: -10
+  },
+
+  userEmail: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+    top: -15
+  },
+
+  editIcon: {
+    padding: 6,
+    top: -20
+  },
+
+  /* BOTTOM BAR */
+  bottomBar: {
+    position: 'absolute',
+    bottom: 3,
+    left: 5,
+    right: 5,
+    height: 96,
+    backgroundColor: '#F8FAF9',
+    borderRadius: 32,
+    justifyContent: 'center',
+    elevation: 20,
+  },
+
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 36,
+    alignItems: 'center',
+  },
+  settingsContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
 
   sectionTitle: {
-    fontSize: 18,          // Figma: 18px
-    fontWeight: '400',    // Inter Regular
-    color: '#00140B',     // Figma color
-    marginTop: 24,
-    marginBottom: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00140B',
+    marginBottom: 6,
   },
-
 
   row: {
     flexDirection: 'row',
@@ -242,134 +279,22 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#9CA3AF',
   },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 3,                     // lifted from screen
-    left: 5,
-    right: 3,
-    height: 96,
-    backgroundColor: '#F8FAF9',
-    borderRadius: 32,               // pill shape
-    justifyContent: 'center',
 
-    // Figma soft glow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    elevation: 20,
-  },
-
-
-
-
-
-  delete: {
-    color: '#EF4444',
-    fontSize: 15,
-  },
-  listText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#666666',
-  },
-
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'android'
-      ? StatusBar.currentHeight + 100
-      : 100,
-    left: 20,
-    zIndex: 10,
-  },
-
-  backRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  profileText: {
-    marginLeft: 12,
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   rateRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
 
-  starsContainer: {
+  deleteRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 20,
+  },
+
+  deleteText: {
     marginLeft: 8,
-    height: 16,          // Figma height
-    gap: 2,              // Figma spacing
+    fontSize: 15,
+    color: '#EF4444',
   },
 
-
-  /* PROFILE */
-  profileContent: {
-    backgroundColor: '#FFFFFF',
-    paddingTop: 0,        // 🔥 remove top gap
-    paddingBottom: 24,
-    paddingHorizontal: 16,
-    position: 'relative',
-  },
-
-  avatarWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    position: 'absolute',
-    top: -24,
-    left: 16,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 6,
-    zIndex: 10,
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 64,
-    marginTop: -22,   // 🔥 pulls text up to match avatar
-  },
-
-
-  profileInfo: {
-    flex: 1,
-  },
-
-  userName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#00140B',
-
-  },
-
-
-  userEmail: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-
-  editIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,   // small touch area
-  },
-
-
-
-
-  editText: {
-    fontSize: 16,
-    color: '#1E4D3A',
-  },
 });

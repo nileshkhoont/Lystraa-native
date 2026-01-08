@@ -30,7 +30,7 @@ export default function TermsConditionScreen() {
       >
         {/* GREEN HEADER */}
         <View style={styles.headerOuter}>
-          <CardHeader width={500} height={290} />
+          <CardHeader width={420} height={220} />
 
           {/* Back + Title */}
           <TouchableOpacity

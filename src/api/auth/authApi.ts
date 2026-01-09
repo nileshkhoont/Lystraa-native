@@ -21,9 +21,11 @@ export interface ChangePasswordRequest {
 export interface AuthResponse {
   success: boolean;
   message: string;
+  token?: string;
+  user?: any;
   data?: any;
 }
-// “Add authentication endpoints to my main API”
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     register: builder.mutation<AuthResponse, RegisterRequest>({
@@ -32,15 +34,8 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body: credentials,
       }),
-      transformResponse: (response: any) => ({
-        success: true,
-        message: response.message || 'Registration successful!',
-        data: response,
-      }),
-      transformErrorResponse: (response: any) => ({
-        success: false,
-        message: response.data?.message || 'Registration failed. Please try again.',
-      }),
+      // REMOVE transformResponse and transformErrorResponse completely
+      // Let the response pass through as-is from backend
     }),
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -48,15 +43,7 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body: credentials,
       }),
-      transformResponse: (response: any) => ({
-        success: true,
-        message: response.message || 'Login successful!',
-        data: response,
-      }),
-      transformErrorResponse: (response: any) => ({
-        success: false,
-        message: response.data?.message || 'Invalid email or password. Please try again.',
-      }),
+      // REMOVE transformResponse and transformErrorResponse
     }),
     changePassword: builder.mutation<AuthResponse, ChangePasswordRequest>({
       query: (passwords) => ({
@@ -64,15 +51,7 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body: passwords,
       }),
-      transformResponse: (response: any) => ({
-        success: true,
-        message: response.message || 'Password changed successfully!',
-        data: response,
-      }),
-      transformErrorResponse: (response: any) => ({
-        success: false,
-        message: response.data?.message || 'Failed to change password. Please try again.',
-      }),
+      // REMOVE transformResponse and transformErrorResponse
     }),
   }),
 });

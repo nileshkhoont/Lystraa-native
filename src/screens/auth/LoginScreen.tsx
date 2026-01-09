@@ -50,19 +50,28 @@ const Login = ({ navigation }: any) => {
     try {
       const result = await login({ email, password }).unwrap();
       
-      if (result.success && result.data?.token) {
+      console.log('Login response:', result);
+      
+      // Backend returns token directly, not nested in data
+      const token = result.token || result.data?.token;
+      const user = result.user || result.data?.user;
+      
+      if (result.success && token) {
         // Store token in AsyncStorage
-        await AsyncStorage.setItem('token', result.data.token);
+        await AsyncStorage.setItem('token', token);
         
         // Store user data if needed
-        if (result.data.user) {
-          await AsyncStorage.setItem('user', JSON.stringify(result.data.user));
+        if (user) {
+          await AsyncStorage.setItem('user', JSON.stringify(user));
         }
         
-        Alert.alert('Success', result.message);
+        Alert.alert('Success', result.message || 'Login successful!');
         navigation?.navigate('Home' as never);
+      } else {
+        Alert.alert('Login Failed', 'No token received from server');
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       const errorMessage = error?.data?.message || error?.message || 'Invalid email or password. Please try again.';
       Alert.alert('Login Failed', errorMessage);
     }

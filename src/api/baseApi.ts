@@ -2,10 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use 10.0.2.2 for Android emulator, localhost for iOS simulator
-const API_BASE_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:5000/api'
-  : 'http://localhost:5000/api';
+// API Base URL
+const API_BASE_URL = 'https://cusped-magen-unforwarded.ngrok-free.dev/api';
 
 // Create the base API
 export const baseApi = createApi({
@@ -19,6 +17,8 @@ export const baseApi = createApi({
         headers.set('Authorization', `Bearer ${token}`);
       }
       headers.set('Content-Type', 'application/json');
+      // Add ngrok bypass header to skip browser warning
+      headers.set('ngrok-skip-browser-warning', 'true');
       return headers;
     },
   }),

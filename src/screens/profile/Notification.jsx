@@ -15,12 +15,7 @@ import Arrow from '../../assets/images/Arrow 1.svg';
 import IPhone from '../../assets/home/iphone17.svg';
 import Jean from '../../assets/home/jean.svg';
 import GooglePixel from '../../assets/home/google-pixel.svg';
-
-import Big from '../../assets/images/BIG.svg';
-import Button from '../../assets/images/Button.svg';
-import Icon1 from '../../assets/images/Icon1.svg';
-import Icon2 from '../../assets/images/Icon2.svg';
-import Icon4 from '../../assets/images/Icon4.svg';
+import BottomBar from '../../components/BottomBar';
 
 export default function Notification() {
   const navigation = useNavigation();
@@ -29,25 +24,25 @@ export default function Notification() {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-      <ScrollView
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        {/* Header */}
-        <View style={styles.headerOuter}>
-          <CardHeader width={420} height={220} />
+      {/* FIXED GREEN HEADER */}
+      <View style={styles.headerOuter}>
+        <CardHeader width={420} height={220} />
 
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <View style={styles.backRow}>
-              <Arrow width={22} height={22} />
-              <Text style={styles.title}>Notification</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <View style={styles.backRow}>
+            <Arrow width={22} height={22} />
+            <Text style={styles.title}>Notification</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
 
-        {/* White Content */}
-        <View style={styles.content}>
+      {/* SCROLLABLE WHITE CONTENT */}
+      <View style={styles.content}>
+        <ScrollView
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120, padding: 20 }}
+        >
           <NotificationCard
             Icon={IPhone}
             title="Price Drop Alert!"
@@ -71,19 +66,10 @@ export default function Notification() {
             title="Price lock expiring ⏰"
             text="Your exclusive price access ends in 2 hours."
           />
-        </View>
-      </ScrollView>
-
-      {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.tabs}>
-          <Icon1 width={55} height={55} />
-          <Icon2 width={55} height={55} />
-          <Big width={80} height={80} />
-          <Icon4 width={55} height={55} />
-          <Button width={55} height={55} />
-        </View>
+        </ScrollView>
       </View>
+
+      <BottomBar />
     </View>
   );
 }
@@ -104,7 +90,7 @@ const NotificationCard = ({ Icon, title, text }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F8F7',
+    backgroundColor: '#FFFFFF',
   },
 
   headerOuter: {
@@ -132,11 +118,13 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     marginTop: -20,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
+    flex: 1,
+    overflow: 'hidden',
+    elevation: 10,
   },
 
   card: {
@@ -175,24 +163,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     lineHeight: 20,
-  },
-
-  bottomBar: {
-    position: 'absolute',
-    bottom: 3,
-    left: 5,
-    right: 5,
-    height: 96,
-    backgroundColor: '#F8FAF9',
-    borderRadius: 32,
-    justifyContent: 'center',
-    elevation: 20,
-  },
-
-  tabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 36,
-    alignItems: 'center',
   },
 });

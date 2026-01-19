@@ -6,38 +6,37 @@ import {
   TouchableOpacity,
   StyleSheet,
   Pressable,
-  Alert,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MailSVG from '../../assets/onboarding/mail-icon.svg';
 import LockSVG from '../../assets/onboarding/lock-icon.svg';
+import Eyeop from '../../assets/onboarding/eyeop.svg';
+import Eyeclo from '../../assets/onboarding/eyeclo.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLoginMutation } from '../../api/auth/authApi';
 import { validateEmail } from '../../utils/validation';
-import Eyeopen from '../../assets/onboarding/eyeopen.svg';
-import Eyeclose from '../../assets/onboarding/eyeclose.svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
-  
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async () => {
-    // Clear previous errors
     setErrors({});
 
-    // Validate fields
     const emailError = validateEmail(email);
-    const passwordError = password.trim() === '' ? ' Password is required' : '';
+    const passwordError =
+      password.trim() === '' ? 'Please Enter The Password' : '';
 
-    // Check if there are any errors
     if (emailError || passwordError) {
       setErrors({
         email: emailError || undefined,
@@ -46,214 +45,223 @@ const Login = ({ navigation }: any) => {
       return;
     }
 
-    // All validations passed, proceed with login
     try {
       const result = await login({ email, password }).unwrap();
-      
-      console.log('Login response:', result);
-      
-      // Backend returns token directly, not nested in data
       const token = result.token || result.data?.token;
       const user = result.user || result.data?.user;
-      
-      if (result.success && token) {
-        // Store token in AsyncStorage
+
+      if (token) {
         await AsyncStorage.setItem('token', token);
-        
-        // Store user data if needed
-        if (user) {
-          await AsyncStorage.setItem('user', JSON.stringify(user));
-        }
-        
-        Alert.alert('Success', result.message || 'Login successful!');
-        navigation?.navigate('Home' as never);
-      } else {
-        Alert.alert('Login Failed', 'No token received from server');
+        if (user) await AsyncStorage.setItem('user', JSON.stringify(user));
+
+        Toast.show({
+          type: 'success',
+          text1: 'Login Successful',
+          text2: 'Welcome back! 🎉',
+          position: 'top',
+          topOffset: 15,        // 👈 IMPORTANT (controls vertical position)
+          visibilityTime: 2000,
+        });
+
+        // ⬇️ WAIT for toast, then navigate
+        setTimeout(() => {
+          navigation.navigate('MainHome');
+        }, 1000);   // same as toast time
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      const errorMessage = error?.data?.message || error?.message || 'Invalid email or password. Please try again.';
-      Alert.alert('Login Failed', errorMessage);
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: err?.data?.message || 'Invalid credentials',
+      });
     }
   };
 
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (errors.email) setErrors(prev => ({ ...prev, email: undefined }));
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (errors.password)
+      setErrors(prev => ({ ...prev, password: undefined }));
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.subtitle}>
-        Enter Your Email To Start Shopping And Get Awesome Deals Today!
-      </Text>
+    <View style={styles.root}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" translucent={false} />
 
-      <Text style={styles.label}>
-        Email<Text style={styles.required}>*</Text>
-      </Text>
-      <View style={[styles.inputContainer, errors.email && styles.inputError]}>
-        <MailSVG height={20} width={20} style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="rifqi.naufal@mail.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-      {errors.email && (
-        <Text style={styles.errorText}>{errors.email}</Text>
-      )}
-
-      <Text style={styles.label}>
-        Password<Text style={styles.required}>*</Text>
-      </Text>
-      <View style={[styles.inputContainer, errors.password && styles.inputError]}>
-        <LockSVG height={20} width={20} style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="********"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-        />
-        <Pressable
-          onPress={() => setShowPassword(!showPassword)}
-          style={styles.eyeButton}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {showPassword ? (
-            <Eyeopen width={20} height={20} />
-          ) : (
-            <Eyeclose width={20} height={20} />
+          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.subtitle}>
+            Enter Your Email To Start Shopping And Get Awesome Deals Today!
+          </Text>
+
+          {/* Email */}
+          <Text style={styles.label}>
+            Email<Text style={styles.required}>*</Text>
+          </Text>
+          <View style={[styles.inputContainer, errors.email && styles.inputError]}>
+            <MailSVG width={20} height={20} />
+            <TextInput
+              style={styles.input}
+              placeholder="you@email.com"
+              value={email}
+              onChangeText={handleEmailChange}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
+          {/* Password */}
+          <Text style={styles.label}>
+            Password<Text style={styles.required}>*</Text>
+          </Text>
+          <View style={[styles.inputContainer, errors.password && styles.inputError]}>
+            <LockSVG width={20} height={20} />
+
+            <TextInput
+              style={styles.input}
+              placeholder="********"
+              value={password}
+              onChangeText={handlePasswordChange}
+              secureTextEntry={!showPassword}
+            />
+
+            <Pressable
+              onPress={() => setShowPassword(prev => !prev)}
+              style={styles.eyeButton}
+              hitSlop={10}
+            >
+              {showPassword ? (
+                <Eyeop width={22} height={22} />
+              ) : (
+                <Eyeclo width={22} height={22} />
+              )}
+            </Pressable>
+          </View>
+
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
           )}
-        </Pressable>
 
-      </View>
-      {errors.password && (
-        <Text style={styles.errorText}>{errors.password}</Text>
-      )}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ForgotPassword')}
+            style={styles.forgotPasswordLink}
+          >
+            <Text style={styles.forgotPasswordText}>
+              Forgot your password?
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('OldPasswordScreen' as never)}>
-        <Text style={styles.forgot}>Forgot your password?</Text>
-      </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
+            <LinearGradient
+              colors={['#004225', '#4C7A66']}
+              style={styles.loginButton}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginText}>Log In</Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
-        <LinearGradient
-          colors={['#004225', '#4C7A66']}
-          start={{ x: 1, y: 0 }}
-          end={{ x: 0, y: 0 }}
-          style={[styles.loginButton, isLoading && styles.disabledButton]}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginButtonText}>Log In</Text>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.orText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
 
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.orText}>OR</Text>
-        <View style={styles.divider} />
-      </View>
-
-      <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Don't have an account? </Text>
-        <TouchableOpacity
-          onPress={() => navigation?.navigate('CreateAccount' as never)}
-        >
-          <Text style={styles.registerLink}>Register</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.registerRow}>
+            <Text>Don't have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('CreateAccount')}>
+              <Text style={styles.registerLink}> Register</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };
 
+export default Login;
+
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 100,
+    backgroundColor: '#FFFFFF',
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  container: {
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    paddingTop: 80,
+    paddingBottom: 120,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#00140B',
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666666',
-    marginBottom: 24,
+    color: '#667085',
+    marginVertical: 12,
   },
   label: {
+    marginTop: 20,
+    marginBottom: 6,
     fontSize: 14,
-    color: '#1a3c2b',
-    marginBottom: 4,
-    marginTop: 16,
+    color: '#00140B',
     fontWeight: '500',
   },
   required: {
     color: '#d32f2f',
     fontWeight: 'bold',
   },
-  inputIcon: {
-    paddingHorizontal: 4,
-    color: '#888',
-    fontSize: 18,
-    marginRight: 6,
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 48,
+    backgroundColor: '#FFF',
   },
-
   input: {
     flex: 1,
-    height: 44,
-    fontSize: 16,
-    color: '#00140B',
-  },
-  forgot: {
-    color: '#004225',
-    fontFamily: 'Manrope-Regular',
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 19,     // 120% of 16px ≈ 19px
-    alignSelf: 'flex-start',
-    marginTop: 6,
-    marginBottom: 18,
+    marginLeft: 8,
+    paddingRight: 40,
   },
   eyeButton: {
-    width: 20,
-    height: 20,
+    position: 'absolute',
+    right: 12,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-
-
-  loginButton: {
-    backgroundColor: '#295C3C',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 18,
-    marginTop: 4,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 6,
+    marginTop: 30,
   },
   divider: {
     flex: 1,
@@ -266,35 +274,42 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 13,
   },
-  registerContainer: {
+  loginButton: {
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
+  },
+  loginText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  registerText: {
-    color: '#444',
-    fontSize: 14,
+    marginTop: 30,
   },
   registerLink: {
     color: '#004225',
-    fontWeight: '500',
-    fontSize: 14,
+    fontWeight: '600',
   },
-  inputError: {
-    borderColor: '#d32f2f',
-    borderWidth: 1.5,
+  forgotPasswordLink: {
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  forgotPasswordText: {
+    color: '#004225',
+    fontSize: 15,
+    fontWeight: '600',
   },
   errorText: {
     color: '#d32f2f',
+    marginTop: 4,
     fontSize: 12,
-    marginTop: -4,
-    marginBottom: 4,
-    marginLeft: 4,
   },
-  disabledButton: {
-    opacity: 0.6,
+  inputError: {
+    borderColor: '#d32f2f',
   },
 });
-
-export default Login;

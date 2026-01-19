@@ -1,53 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import RNBootSplash from 'react-native-bootsplash';
-import SplashScreen from './src/screens/SplashScreen';
 import ScreenNavigation from './src/navigation/ScreenNavigation';
 import { store } from './src/app/store';
+import Toast from 'react-native-toast-message';   
 import './svg.d.ts';
 
-const fetchInitialData = async () => {
-  return new Promise<void>(resolve => setTimeout(() => resolve(), 5000));
-};
-
 const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    const initApp = async () => {
-      await fetchInitialData();
-      await RNBootSplash.hide({ fade: true });
-      setIsLoading(false);
-    };
-    initApp();
+    const timer = setTimeout(() => {
+      RNBootSplash.hide({ fade: true });
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <SplashScreen />
-      </View>
-    );
-  }
   return (
     <Provider store={store}>
       <ScreenNavigation />
+      <Toast />   
     </Provider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-});
 
 export default App;

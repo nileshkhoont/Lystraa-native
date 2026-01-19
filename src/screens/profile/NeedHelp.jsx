@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -7,77 +7,144 @@ import {
     StatusBar,
     Platform,
     TouchableOpacity,
+    TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
 import CardHeader from '../../assets/images/cardheader.svg';
 import Arrow from '../../assets/images/Arrow 1.svg';
 import Email from '../../assets/images/Email.svg';
 import LinearGradient from 'react-native-linear-gradient';
-import { TextInput } from 'react-native';
-
-
+import { validateEmail } from '../../utils/validation';
 
 export default function NeedHelp() {
     const navigation = useNavigation();
+
+    const [topic, setTopic] = useState('');
+    const [message, setMessage] = useState('');
+    const [email, setEmail] = useState('');
+
+    const [errors, setErrors] = useState({
+        topic: '',
+        message: '',
+        email: '',
+    });
+
+    /* ---------------- VALIDATION ---------------- */
+
+    const validateTopic = (text) => {
+        if (!text.trim()) return 'Please enter topic';
+        return '';
+    };
+
+    const validateMessage = (text) => {
+        if (!text.trim()) return 'Please enter message';
+        return '';
+    };
+
+    const validateEmailField = (text) => {
+        return validateEmail(text);
+    };
+
+    const handleSend = () => {
+        const topicErr = validateTopic(topic);
+        const messageErr = validateMessage(message);
+        const emailErr = validateEmailField(email);
+
+        if (topicErr || messageErr || emailErr) {
+            setErrors({
+                topic: topicErr,
+                message: messageErr,
+                email: emailErr,
+            });
+            return;
+        }
+
+        alert('Message sent successfully!');
+    };
 
     return (
         <View style={styles.container}>
             <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-                {/* GREEN HEADER */}
-                <View style={styles.headerOuter}>
-                    <CardHeader width={420} height={220} />
+            {/* ================= GREEN HEADER ================= */}
+            <View style={styles.headerOuter}>
+                <CardHeader width={420} height={220} />
 
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <View style={styles.backRow}>
-                            <Arrow width={22} height={22} />
-                            <Text style={styles.title}>Need Help?</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <View style={styles.backRow}>
+                        <Arrow width={22} height={22} />
+                        <Text style={styles.title}>Need Help?</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
 
-                {/* WHITE CONTENT */}
-                <View style={styles.content}>
+            {/* ================= WHITE CARD ================= */}
+            <View style={styles.content}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    bounces={false}
+                    contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
+                >
                     <Text style={styles.helpTitle}>How can we help you?</Text>
-                    <Text style={styles.topicText}>Topic</Text>
+
+                    {/* Topic */}
+                    <Text style={styles.label}>Topic</Text>
                     <TextInput
-                        style={styles.inputBox}
+                        style={[styles.inputBox, errors.topic && styles.errorBorder]}
+                        textAlignVertical="center"
                         placeholder="Enter topic"
                         placeholderTextColor="#9CA3AF"
+                        value={topic}
+                        onChangeText={(text) => {
+                            setTopic(text);
+                            setErrors(prev => ({ ...prev, topic: validateTopic(text) }));
+                        }}
                     />
+                    {errors.topic ? <Text style={styles.errorText}>{errors.topic}</Text> : null}
 
+                    {/* Message */}
                     <TextInput
-                        style={styles.messageBox}
+                        style={[styles.messageBox, errors.message && styles.errorBorder]}
                         placeholder="Write your message..."
                         placeholderTextColor="#9CA3AF"
                         multiline
                         textAlignVertical="top"
+                        value={message}
+                        onChangeText={(text) => {
+                            setMessage(text);
+                            setErrors(prev => ({ ...prev, message: validateMessage(text) }));
+                        }}
                     />
+                    {errors.message ? <Text style={styles.errorText}>{errors.message}</Text> : null}
 
-                    <Text style={styles.emailLabel}>
+                    {/* Email */}
+                    <Text style={styles.label}>
                         Email <Text style={styles.asterisk}>*</Text>
                     </Text>
-                    <View style={styles.emailBox}>
-                        <View style={styles.iconBox}>
-                            <Email width={20} height={16} />
-                        </View>
 
+                    <View style={[styles.emailBox, errors.email && styles.errorBorder]}>
+                        <Email width={18} height={16} />
                         <TextInput
                             style={styles.emailText}
+                            textAlignVertical="center"
                             placeholder="Enter your email"
                             placeholderTextColor="#9CA3AF"
                             keyboardType="email-address"
                             autoCapitalize="none"
+                            value={email}
+                            onChangeText={(text) => {
+                                setEmail(text);
+                                setErrors(prev => ({ ...prev, email: validateEmailField(text) }));
+                            }}
                         />
                     </View>
+                    {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
 
                     <Text style={styles.emailHint}>
                         Your Email Address will be used solely for feedback to your query.
                     </Text>
 
-                    <TouchableOpacity activeOpacity={0.8}>
+                    <TouchableOpacity onPress={handleSend}>
                         <LinearGradient
                             colors={['#004225', '#4C7A66']}
                             start={{ x: 0, y: 0 }}
@@ -88,25 +155,18 @@ export default function NeedHelp() {
                         </LinearGradient>
                     </TouchableOpacity>
 
-
                     <Text style={styles.supportText}>
                         Alternatively, you can also contact us by email at{' '}
                         <Text style={styles.supportEmail}>lystraa@support.com</Text>
                     </Text>
-
-
-                </View>
-
-            </ScrollView>
+                </ScrollView>
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F6F8F7',
-    },
+    container: { flex: 1, backgroundColor: '#F6F8F7' },
 
     headerOuter: {
         height: 180,
@@ -116,166 +176,100 @@ const styles = StyleSheet.create({
 
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'android' ? StatusBar.currentHeight + 75 : 100, // pushed down
+        top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
         left: 20,
     },
 
-    emailBox: {
-        width: 353,
-        height: 40,                 // Figma hug height
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',      // Figma border
-        marginTop: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 18,      // left & right
-        paddingVertical: 8,         // top & bottom
-        backgroundColor: '#FFFFFF',
-    },
-    backRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    title: {
-        marginLeft: 12,
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#FFFFFF',
-    },
+    backRow: { flexDirection: 'row', alignItems: 'center' },
+    title: { marginLeft: 12, fontSize: 20, fontWeight: '700', color: '#fff' },
 
     content: {
         backgroundColor: '#FFFFFF',
         marginTop: -20,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        padding: 20,
-        minHeight: 600,
+        flex: 1,
+        overflow: 'hidden',
     },
 
     helpTitle: {
-        width: 353,
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: '700',
-        lineHeight: 38.4, // 120%
         color: '#00140B',
         textAlign: 'center',
-
+        marginBottom: 20,
     },
 
-    topicText: {
-        marginTop: 24,
-        width: 353,
+    label: {
         fontSize: 16,
-        fontWeight: '400',
-        lineHeight: 19.2,
         color: '#00140B',
-    },
-
-    iconBox: {
-        width: 32,
-        height: 32,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
+        marginTop: 16,
     },
 
     inputBox: {
-        width: 353,
-        height: 36,
+        height: 40,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E5E7EB',
         marginTop: 8,
-        backgroundColor: '#FFFFFF',
         paddingHorizontal: 12,
-        color: '#111827',   // 🔥 ADD THIS
+        backgroundColor: '#fff',
+
+        // 🔥 Fix placeholder jump
+        paddingVertical: 0,
+        textAlignVertical: 'center',
     },
 
     messageBox: {
-        width: 353,
-        height: 250,
+        height: 200,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E5E7EB',
         marginTop: 16,
-        backgroundColor: '#FFFFFF',
         padding: 12,
-        color: '#111827',   // 🔥 ADD THIS
+        backgroundColor: '#fff',
     },
 
-    emailLabel: {
-        marginTop: 24,
-        width: 353,
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#00140B',
-    },
-
-    asterisk: {
-        color: '#EF4444',
-    },
-
-    emailLabel: {
-        marginTop: 24,
-        width: 353,
-        fontSize: 16,
-        fontWeight: '400',
-        lineHeight: 19.2,
-        color: '#00140B',
+    emailBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 40,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        paddingHorizontal: 12,
+        marginTop: 8,
+        backgroundColor: '#fff',
     },
 
     emailText: {
         flex: 1,
+        marginLeft: 8,
         fontSize: 16,
         color: '#111827',
-        paddingVertical: 0,     // prevents Android clipping
+
+        // 🔥 Fix placeholder jump
+        paddingVertical: 0,
+        textAlignVertical: 'center',
     },
 
+    asterisk: { color: '#EF4444' },
 
-    emailSvg: {
-        marginRight: 16,   // Figma gap
-    },
-    emailHint: {
-        width: 353,
-        marginTop: 8,
-        fontSize: 12,           // Figma
-        fontWeight: '400',
-        lineHeight: 14.4,      // 120% of 12
-        color: '#666666',      // Figma gray
-    },
+    emailHint: { marginTop: 8, fontSize: 12, color: '#666' },
 
     sendBtn: {
-        width: 353,
-        height: 43,          // Figma hug height
+        height: 44,
         borderRadius: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 18,
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 24,
     },
 
-    sendText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
+    sendText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
-    supportText: {
-        width: 353,
-        marginTop: 16,
-        fontSize: 12,        // Figma
-        fontWeight: '400',
-        lineHeight: 14.4,   // 120%
-        color: '#666666',
-        textAlign: 'left', // Figma is left-aligned
-    },
+    supportText: { marginTop: 16, fontSize: 12, color: '#666' },
+    supportEmail: { color: '#004225' },
 
-    supportEmail: {
-        color: '#004225',  // Figma green
-        fontWeight: '400',
-    },
-
+    errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
+    errorBorder: { borderColor: '#EF4444' },
 });

@@ -9,20 +9,25 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MailSVG from '../../assets/onboarding/mail-icon.svg';
 import LockSVG from '../../assets/onboarding/lock-icon.svg';
 import UserSVG from '../../assets/onboarding/user-icon.svg';
 import { useRegisterMutation } from '../../api/auth/authApi';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
 import {
   validateEmail,
   validateFirstName,
   validateLastName,
   validatePassword,
 } from '../../utils/validation';
-import Eyeopen from '../../assets/onboarding/eyeopen.svg';
-import Eyeclose from '../../assets/onboarding/eyeclose.svg';
+import Eyeop from '../../assets/onboarding/eyeop.svg';
+import Eyeclo from '../../assets/onboarding/eyeclo.svg';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const CreateAccount = ({ navigation }: any) => {
   const [firstName, setFirstName] = useState('');
@@ -36,7 +41,7 @@ const CreateAccount = ({ navigation }: any) => {
     email?: string;
     password?: string;
   }>({});
-  
+
   const [register, { isLoading }] = useRegisterMutation();
 
   const handleCreateAccount = async () => {
@@ -91,137 +96,167 @@ const CreateAccount = ({ navigation }: any) => {
     }
   };
 
+  const handleFirstNameChange = (text) => {
+    setFirstName(text);
+    const error = validateFirstName(text);
+    setErrors(prev => ({ ...prev, firstName: error || undefined }));
+  };
+
+  const handleLastNameChange = (text) => {
+    setLastName(text);
+    const error = validateLastName(text);
+    setErrors(prev => ({ ...prev, lastName: error || undefined }));
+  };
+
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    const error = validateEmail(text);
+    setErrors(prev => ({ ...prev, email: error || undefined }));
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    const error = validatePassword(text);
+    setErrors(prev => ({ ...prev, password: error || undefined }));
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ flexGrow: 1 }}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 60}
+      >
+        <ScrollView
+          style={{ flex: 1, backgroundColor: '#fff' }}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>
+              Fill In Your Details Below To Get Started On A Seamless Shopping
+              experience.
+            </Text>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>
-          Fill In Your Details Below To Get Started On A Seamless Shopping
-          experience.
-        </Text>
-
-        <Text style={styles.label}>
-          First Name<Text style={styles.required}>*</Text>
-        </Text>
-        <View style={[styles.inputContainer, errors.firstName && styles.inputError]}>
-          <UserSVG height={20} width={20} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="First Name"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-        </View>
-        {errors.firstName && (
-          <Text style={styles.errorText}>{errors.firstName}</Text>
-        )}
-
-        <Text style={styles.label}>Last Name</Text>
-        <View style={[styles.inputContainer, errors.lastName && styles.inputError]}>
-          <UserSVG height={20} width={20} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-        </View>
-        {errors.lastName && (
-          <Text style={styles.errorText}>{errors.lastName}</Text>
-        )}
-
-        <Text style={styles.label}>
-          Email<Text style={styles.required}>*</Text>
-        </Text>
-        <View style={[styles.inputContainer, errors.email && styles.inputError]}>
-          <MailSVG height={20} width={20} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-        {errors.email && (
-          <Text style={styles.errorText}>{errors.email}</Text>
-        )}
-
-        <Text style={styles.label}>
-          Password<Text style={styles.required}>*</Text>
-        </Text>
-        <View style={[styles.inputContainer, errors.password && styles.inputError]}>
-          <LockSVG height={20} width={20} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-          />
-          <Pressable
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeButton}
-          >
-            {showPassword ? (
-              <Eyeopen width={20} height={20} />
-            ) : (
-              <Eyeclose width={20} height={20} />
+            <Text style={styles.label}>
+              First Name<Text style={styles.required}>*</Text>
+            </Text>
+            <View style={[styles.inputContainer, errors.firstName && styles.inputError]}>
+              <UserSVG height={20} width={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="First Name"
+                value={firstName}
+                onChangeText={handleFirstNameChange}
+              />
+            </View>
+            {errors.firstName && (
+              <Text style={styles.errorText}>{errors.firstName}</Text>
             )}
-          </Pressable>
 
-        </View>
-        {errors.password && (
-          <Text style={styles.errorText}>{errors.password}</Text>
-        )}
-
-        <Text style={styles.terms}>
-          By clicking Create Account, you acknowledge you{'\n'} have read and
-          agreed to our <Text style={styles.link}>Terms of Use</Text> and{'\n'}
-          <Text style={styles.link}>Privacy Policy</Text>.
-        </Text>
-
-        <TouchableOpacity onPress={handleCreateAccount} disabled={isLoading}>
-          <LinearGradient
-            colors={['#004225', '#4C7A66']}
-            start={{ x: 1, y: 0 }}
-            end={{ x: 0, y: 0 }}
-            style={[styles.createButton, isLoading && styles.disabledButton]}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.createButtonText}>Create Account</Text>
+            <Text style={styles.label}>Last Name</Text>
+            <View style={[styles.inputContainer, errors.lastName && styles.inputError]}>
+              <UserSVG height={20} width={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={handleLastNameChange}
+              />
+            </View>
+            {errors.lastName && (
+              <Text style={styles.errorText}>{errors.lastName}</Text>
             )}
-          </LinearGradient>
-        </TouchableOpacity>
 
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>OR</Text>
-          <View style={styles.divider} />
-        </View>
+            <Text style={styles.label}>
+              Email<Text style={styles.required}>*</Text>
+            </Text>
+            <View style={[styles.inputContainer, errors.email && styles.inputError]}>
+              <MailSVG height={20} width={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={handleEmailChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+            )}
 
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account?</Text>
+            <Text style={styles.label}>
+              Password<Text style={styles.required}>*</Text>
+            </Text>
+            <View style={[styles.inputContainer, errors.password && styles.inputError]}>
+              <LockSVG height={20} width={20} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={handlePasswordChange}
 
-          <TouchableOpacity onPress={() => navigation?.goBack()} style={{ marginLeft: 4}}>
-            <Text style={styles.loginLink}>Login</Text>
-          </TouchableOpacity>
-        </View>
+                secureTextEntry={!showPassword}
+              />
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeButton}
+              >
+                {showPassword ? (
+                  <Eyeop width={20} height={20} />
+                ) : (
+                  <Eyeclo width={20} height={20} />
+                )}
+              </Pressable>
 
-      </View>
-    </ScrollView>
+            </View>
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
+
+            <Text style={styles.terms}>
+              By clicking Create Account, you acknowledge you{'\n'} have read and
+              agreed to our <Text style={styles.link}>Terms of Use</Text> and{'\n'}
+              <Text style={styles.link}>Privacy Policy</Text>.
+            </Text>
+
+            <TouchableOpacity onPress={handleCreateAccount} disabled={isLoading}>
+              <LinearGradient
+                colors={['#004225', '#4C7A66']}
+                start={{ x: 1, y: 0 }}
+                end={{ x: 0, y: 0 }}
+                style={[styles.createButton, isLoading && styles.disabledButton]}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.createButtonText}>Create Account</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>Already have an account?</Text>
+
+              <TouchableOpacity onPress={() => navigation?.goBack()} style={{ marginLeft: 4 }}>
+                <Text style={styles.loginLink}>Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
-
 const styles = StyleSheet.create({
   showPasswordIcon: {
     paddingHorizontal: 4,
@@ -229,29 +264,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Manrope',
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  scrollContent: {
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 48,   // was 24 → increase for top spacing
-    paddingBottom: 24,
+    paddingTop: 48,
+    paddingBottom: 60,
   },
 
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#00140B',
-    marginBottom: 4,   // 🔽 was 2 → keep small clean gap
+    marginBottom: 4,
     fontFamily: 'Manrope',
   },
 
   subtitle: {
     fontSize: 16,
     color: '#666666',
-    marginTop: 2,     // 🔽 reduce gap from title
-    marginBottom: 16, // keep breathing space before form
+    marginTop: 2,
+    marginBottom: 16,
     fontFamily: 'Manrope',
   },
 

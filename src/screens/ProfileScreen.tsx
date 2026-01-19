@@ -19,9 +19,15 @@ import Arrow from "../assets/images/Arrow 1.svg";
 import EditIcon from "../assets/images/editicon.svg";
 import Frame from "../assets/images/Frame.svg";
 import Frame123 from "../assets/images/Frame123.svg";
-import BottomBar from "../components/BottomBar";
 
-export default function HomeScreen() {
+// Home Assets Icons for Bottom Bar
+import HomeIcon from "../assets/home/homeicon.svg";
+import SearchIcon from "../assets/home/searchicon.svg";
+import HeartIcon from "../assets/home/heart.svg";
+import BellIcon from "../assets/home/bell-notification.svg";
+import UserIcon from "../assets/home/user.svg";
+
+export default function ProfileScreen() {
   const navigation = useNavigation();
   const [user, setUser] = useState(null);
 
@@ -215,7 +221,32 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        <BottomBar />
+        {/* ===== FIXED & CENTERED BOTTOM BAR ===== */}
+        <View style={styles.bottomBar}>
+          <View style={styles.tabs}>
+
+            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Home")}>
+              <HomeIcon width={60} height={58} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Search")}>
+              <SearchIcon width={60} height={58} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Favorites")}>
+              <HeartIcon width={28} height={28} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Notification")}>
+              <BellIcon width={28} height={28} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("HomeScreen")}>
+              <UserIcon width={28} height={28} />
+            </TouchableOpacity>
+
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -317,4 +348,32 @@ const styles = StyleSheet.create({
   deleteRow: { flexDirection: "row", marginTop: 20 },
 
   deleteText: { marginLeft: 8, color: "#EF4444" },
+
+  bottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 90,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    elevation: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  tabs: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-evenly", // 👈 PERFECT CENTER FIX
+    alignItems: "center",
+  },
+
+  iconBox: {
+    width: 60,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

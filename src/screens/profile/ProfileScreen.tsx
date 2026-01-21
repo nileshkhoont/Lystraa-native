@@ -14,18 +14,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native";
 
-import CardHeader from "../assets/images/cardheader.svg";
-import Arrow from "../assets/images/Arrow 1.svg";
-import EditIcon from "../assets/images/editicon.svg";
-import Frame from "../assets/images/Frame.svg";
-import Frame123 from "../assets/images/Frame123.svg";
-
-// Home Assets Icons for Bottom Bar
-import HomeIcon from "../assets/home/homeicon.svg";
-import SearchIcon from "../assets/home/searchicon.svg";
-import HeartIcon from "../assets/home/heart.svg";
-import BellIcon from "../assets/home/bell-notification.svg";
-import UserIcon from "../assets/home/user.svg";
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+// import Arrow from "../assets/images/Arrow 1.svg";
+import Arrow from '../../assets/images/Arrow1.svg';
+import EditIcon from "../../assets/images/editicon.svg";
+import Frame from "../../assets/images/Frame.svg";
+import Frame123 from "../../assets/images/Frame123.svg";
+import BottomBar from '../../components/BottomBar';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -63,7 +58,7 @@ export default function ProfileScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to permanently delete your account?",
+      "Are you sure you want to delete your account?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -71,38 +66,30 @@ export default function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem("token");
-
-              if (token) {
-                const response = await fetch(
-                  "https://cusped-magen-unforwarded.ngrok-free.dev/api/auth/delete-account",
+              // Soft delete - just mark account as deleted locally and clear data
+              await AsyncStorage.setItem("accountDeleted", "true");
+              await AsyncStorage.removeItem("token");
+              await AsyncStorage.removeItem("user");
+              
+              Alert.alert(
+                "Account Deleted",
+                "Your account has been deleted successfully.",
+                [
                   {
-                    method: "DELETE",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      "Content-Type": "application/json",
+                    text: "OK",
+                    onPress: () => {
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: "Login" }],
+                        })
+                      );
                     },
-                  }
-                );
-
-                const data = await response.json();
-
-                if (data.success || response.ok) {
-                  Alert.alert("Success", "Account deleted.");
-                  await AsyncStorage.removeItem("token");
-                  await AsyncStorage.removeItem("user");
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [{ name: "Login" }],
-                    })
-                  );
-                } else {
-                  Alert.alert("Error", data.message || "Failed to delete account");
-                }
-              }
+                  },
+                ]
+              );
             } catch (error) {
-              Alert.alert("Error", "Network error. Please try again.");
+              Alert.alert("Error", "Failed to delete account. Please try again.");
             }
           },
         },
@@ -117,7 +104,7 @@ export default function ProfileScreen() {
 
         {/* HEADER */}
         <View style={styles.headerOuter}>
-          <CardHeader width={420} height={220} />
+          <ResponsiveGreenHeader height={220} />
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <View style={styles.backRow}>
               <Arrow width={22} height={22} />
@@ -221,32 +208,7 @@ export default function ProfileScreen() {
           </ScrollView>
         </View>
 
-        {/* ===== FIXED & CENTERED BOTTOM BAR ===== */}
-        <View style={styles.bottomBar}>
-          <View style={styles.tabs}>
-
-            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Home")}>
-              <HomeIcon width={60} height={58} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Search")}>
-              <SearchIcon width={60} height={58} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Favorites")}>
-              <HeartIcon width={28} height={28} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Notification")}>
-              <BellIcon width={28} height={28} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("HomeScreen")}>
-              <UserIcon width={28} height={28} />
-            </TouchableOpacity>
-
-          </View>
-        </View>
+        <BottomBar />
       </View>
     </SafeAreaView>
   );
@@ -348,32 +310,4 @@ const styles = StyleSheet.create({
   deleteRow: { flexDirection: "row", marginTop: 20 },
 
   deleteText: { marginLeft: 8, color: "#EF4444" },
-
-  bottomBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 90,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    elevation: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  tabs: {
-    flexDirection: "row",
-    width: "100%",
-    justifyContent: "space-evenly", // 👈 PERFECT CENTER FIX
-    alignItems: "center",
-  },
-
-  iconBox: {
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-  },
 });

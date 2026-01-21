@@ -8,30 +8,35 @@ import {
     Platform,
     TouchableOpacity,
     TextInput,
+    KeyboardAvoidingView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useChangePasswordMutation } from '../../api/auth/authApi';
-import { KeyboardAvoidingView } from 'react-native';
-import CardHeader from '../../assets/images/cardheader.svg';
-import Arrow from '../../assets/images/Arrow 1.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
 import EyeOpen from '../../assets/onboarding/eyeopen.svg';
 import EyeClose from '../../assets/onboarding/eyeclose.svg';
 import BottomBar from '../../components/BottomBar';
-
+import { useChangePasswordMutation } from '../../api/auth/authApi';
 import { validatePassword } from '../../utils/validation';
 
+interface PasswordErrors {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
 export default function ChangePassword() {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
 
-    const [oldPassword, setOldPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [oldPassword, setOldPassword] = useState<string>('');
+    const [newPassword, setNewPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
 
-    const [showOld, setShowOld] = useState(false);
-    const [showNew, setShowNew] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
+    const [showOld, setShowOld] = useState<boolean>(false);
+    const [showNew, setShowNew] = useState<boolean>(false);
+    const [showConfirm, setShowConfirm] = useState<boolean>(false);
 
-    const [errors, setErrors] = useState({
+    const [errors, setErrors] = useState<PasswordErrors>({
         oldPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -41,16 +46,16 @@ export default function ChangePassword() {
 
     /* ---------------- VALIDATION ---------------- */
 
-    const validateOld = (text) => {
+    const validateOld = (text: string): string => {
         if (!text) return 'Please Enter Old Password';
         return '';
     };
 
-    const validateNew = (text) => {
-        return validatePassword(text); // 🔥 same logic as Create Account
+    const validateNew = (text: string): string => {
+        return validatePassword(text);
     };
 
-    const validateConfirm = (text) => {
+    const validateConfirm = (text: string): string => {
         if (!text) return 'Please Confirm Password';
         if (text !== newPassword) return 'Passwords do not match';
         return '';
@@ -58,12 +63,12 @@ export default function ChangePassword() {
 
     /* ---------------- LIVE HANDLERS ---------------- */
 
-    const handleOldChange = (text) => {
+    const handleOldChange = (text: string): void => {
         setOldPassword(text);
         setErrors(prev => ({ ...prev, oldPassword: validateOld(text) }));
     };
 
-    const handleNewChange = (text) => {
+    const handleNewChange = (text: string): void => {
         setNewPassword(text);
         const passwordError = validateNew(text);
 
@@ -74,14 +79,14 @@ export default function ChangePassword() {
         }));
     };
 
-    const handleConfirmChange = (text) => {
+    const handleConfirmChange = (text: string): void => {
         setConfirmPassword(text);
         setErrors(prev => ({ ...prev, confirmPassword: validateConfirm(text) }));
     };
 
     /* ---------------- SUBMIT ---------------- */
 
-    const handleSave = async () => {
+    const handleSave = async (): Promise<void> => {
         const oldErr = validateOld(oldPassword);
         const newErr = validateNew(newPassword);
         const confirmErr = validateConfirm(confirmPassword);
@@ -96,17 +101,45 @@ export default function ChangePassword() {
         }
 
         try {
-            await changePassword({
+            console.log('🔄 Attempting to change password...');
+            console.log('📤 Request data:', { oldPassword: '***', newPassword: '***', confirmNewPassword: '***' });
+            
+            // Check if token exists
+            const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+            const token = await AsyncStorage.getItem('token');
+            console.log('🔑 Token exists:', !!token);
+            if (token) {
+                console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+            }
+            
+            const result = await changePassword({
                 oldPassword,
                 newPassword,
                 confirmNewPassword: confirmPassword,
             }).unwrap();
-
+            
+            console.log('✅ Password changed successfully:', result);
             navigation.navigate('ChangePasswordSuccess');
-        } catch (error) {
+        } catch (err: any) {
+            console.error('❌ Change password error - Full error:', JSON.stringify(err, null, 2));
+            console.error('❌ Error status:', err?.status);
+            console.error('❌ Error data:', err?.data);
+            console.error('❌ Error message:', err?.message);
+            
+            let errorMessage = 'Failed to change password.';
+            
+            if (err?.status === 'PARSING_ERROR') {
+                errorMessage = 'Server response error. Please try again.';
+                console.error('❌ PARSING ERROR - Server sent invalid response');
+            } else if (err?.data?.message) {
+                errorMessage = err.data.message;
+            } else if (err?.message) {
+                errorMessage = err.message;
+            }
+            
             setErrors(prev => ({
                 ...prev,
-                oldPassword: error?.data?.message || 'Invalid old password',
+                oldPassword: errorMessage,
             }));
         }
     };
@@ -122,7 +155,7 @@ export default function ChangePassword() {
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
                     <View style={styles.headerOuter}>
-                        <CardHeader width={420} height={220} />
+                        <ResponsiveGreenHeader height={220} />
                         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                             <View style={styles.backRow}>
                                 <Arrow width={22} height={22} />
@@ -200,6 +233,7 @@ export default function ChangePassword() {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -210,12 +244,12 @@ const styles = StyleSheet.create({
     headerOuter: {
         height: 180,
         overflow: 'hidden',
-        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight! : 0,
     },
 
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+        top: Platform.OS === 'android' ? StatusBar.currentHeight! + 60 : 90,
         left: 20,
     },
 
@@ -243,7 +277,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 20,
-        flex: 1,               // 🔥 fills till bottom bar
+        flex: 1,
     },
 
     label: {
@@ -303,4 +337,3 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
-

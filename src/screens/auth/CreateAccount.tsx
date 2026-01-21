@@ -67,7 +67,9 @@ const CreateAccount = ({ navigation }: any) => {
 
     // All validations passed, proceed with registration
     try {
-      console.log('Starting registration...');
+      console.log('🔄 Starting registration...');
+      console.log('📤 Registration data:', { firstName, lastName, email, password: '***' });
+      
       const result = await register({
         firstName,
         lastName,
@@ -75,7 +77,7 @@ const CreateAccount = ({ navigation }: any) => {
         password,
       }).unwrap();
 
-      console.log('Registration response:', result);
+      console.log('✅ Registration response:', result);
 
       if (result.success) {
         Alert.alert(
@@ -90,8 +92,21 @@ const CreateAccount = ({ navigation }: any) => {
         );
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
-      const errorMessage = error?.data?.message || error?.message || 'Something went wrong. Please try again.';
+      console.error('❌ Registration error - Full:', JSON.stringify(error, null, 2));
+      console.error('❌ Error status:', error?.status);
+      console.error('❌ Error data:', error?.data);
+      console.error('❌ Error message:', error?.message);
+      
+      let errorMessage = 'Something went wrong. Please try again.';
+      
+      if (error?.status === 'PARSING_ERROR') {
+        errorMessage = 'Server communication error. Please check your connection.';
+      } else if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       Alert.alert('Registration Failed', errorMessage);
     }
   };

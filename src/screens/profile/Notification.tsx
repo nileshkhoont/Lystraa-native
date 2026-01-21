@@ -9,16 +9,21 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-import CardHeader from '../../assets/images/cardheader.svg';
-import Arrow from '../../assets/images/Arrow 1.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
 import IPhone from '../../assets/home/iphone17.svg';
 import Jean from '../../assets/home/jean.svg';
 import GooglePixel from '../../assets/home/google-pixel.svg';
 import BottomBar from '../../components/BottomBar';
 
+interface NotificationCardProps {
+  Icon: React.FC<{ width: number; height: number }>;
+  title: string;
+  text: string;
+}
+
 export default function Notification() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   return (
     <View style={styles.container}>
@@ -26,7 +31,7 @@ export default function Notification() {
 
       {/* FIXED GREEN HEADER */}
       <View style={styles.headerOuter}>
-        <CardHeader width={420} height={220} />
+        <ResponsiveGreenHeader height={220} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <View style={styles.backRow}>
@@ -75,7 +80,7 @@ export default function Notification() {
 }
 
 /* Notification Card Component */
-const NotificationCard = ({ Icon, title, text }) => (
+const NotificationCard: React.FC<NotificationCardProps> = ({ Icon, title, text }) => (
   <View style={styles.card}>
     <View style={styles.imageBox}>
       <Icon width={60} height={60} />
@@ -96,12 +101,12 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight! : 0,
   },
 
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === 'android' ? StatusBar.currentHeight! + 60 : 90,
     left: 20,
   },
 

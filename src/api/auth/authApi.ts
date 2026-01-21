@@ -18,6 +18,21 @@ export interface ChangePasswordRequest {
   confirmNewPassword: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface VerifyCodeRequest {
+  email: string;
+  code: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -47,11 +62,31 @@ export const authApi = baseApi.injectEndpoints({
     }),
     changePassword: builder.mutation<AuthResponse, ChangePasswordRequest>({
       query: (passwords) => ({
-        url: '/auth/change-password',
+        url: '/password/change',
         method: 'POST',
         body: passwords,
       }),
-      // REMOVE transformResponse and transformErrorResponse
+    }),
+    forgotPassword: builder.mutation<AuthResponse, ForgotPasswordRequest>({
+      query: (data) => ({
+        url: '/password/forgot',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    verifyCode: builder.mutation<AuthResponse, VerifyCodeRequest>({
+      query: (data) => ({
+        url: '/password/verify-code',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation<AuthResponse, ResetPasswordRequest>({
+      query: (data) => ({
+        url: '/password/reset',
+        method: 'POST',
+        body: data,
+      }),
     }),
   }),
 });
@@ -61,4 +96,7 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useVerifyCodeMutation,
+  useResetPasswordMutation,
 } = authApi;

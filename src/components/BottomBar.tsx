@@ -4,14 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 
 // Home Assets Icons for Bottom Bar
 import HomeIcon from '../assets/home/homeicon.svg';
-import SearchIcon from '../assets/home/searchicon.svg';
+import SearchIcon from '../assets/home/searchh.svg';
 import HeartIcon from '../assets/home/heart.svg';
 import BellIcon from '../assets/home/bell-notification.svg';
 import UserIcon from '../assets/home/user.svg';
 
 export default function BottomBar() {
   const navigation = useNavigation();
-
   return (
     <View style={styles.bottomBar}>
       <View style={styles.tabs}>
@@ -21,7 +20,7 @@ export default function BottomBar() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Search" as never)}>
-          <SearchIcon width={60} height={58} />
+          <SearchIcon width={60} height={60} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconBox} onPress={() => navigation.navigate("Like" as never)}>

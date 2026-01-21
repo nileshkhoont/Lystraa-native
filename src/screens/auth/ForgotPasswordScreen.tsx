@@ -18,6 +18,7 @@ import LockSVG from '../../assets/onboarding/lock-icon.svg';
 import Eyeopen from '../../assets/onboarding/eyeopen.svg';
 import Eyeclose from '../../assets/onboarding/eyeclose.svg';
 import { validateEmail, validatePassword } from '../../utils/validation';
+import { useForgotPasswordMutation, useVerifyCodeMutation, useResetPasswordMutation } from '../../api/auth/authApi';
 
 const ForgotPasswordScreen = ({ navigation }: any) => {
   const [step, setStep] = useState(1); // 1: Email, 2: Code, 3: New Password
@@ -29,6 +30,10 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  const [forgotPassword] = useForgotPasswordMutation();
+  const [verifyCode] = useVerifyCodeMutation();
+  const [resetPassword] = useResetPasswordMutation();
 
   // Step 1: Submit Email
   const handleSendCode = async () => {
@@ -40,24 +45,18 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('https://cusped-magen-unforwarded.ngrok-free.dev/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        Alert.alert('Success', 'Verification code sent to your email');
-        setStep(2);
-        setErrors({});
-      } else {
-        setErrors({ email: data.message || 'Failed to send code' });
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error. Please try again.');
+      console.log('🔄 Sending forgot password request for:', email);
+      const result = await forgotPassword({ email }).unwrap();
+      console.log('✅ Success response:', result);
+      Alert.alert('Success', result.message || 'Verification code sent to your email');
+      setStep(2);
+      setErrors({});
+    } catch (error: any) {
+      console.error('❌ Forgot password error:', error);
+      console.error('❌ Error data:', error?.data);
+      console.error('❌ Error status:', error?.status);
+      const errorMessage = error?.data?.message || error?.message || 'Failed to send code. Please try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -72,23 +71,13 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('https://cusped-magen-unforwarded.ngrok-free.dev/api/auth/verify-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setStep(3);
-        setErrors({});
-      } else {
-        setErrors({ code: data.message || 'Invalid verification code' });
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error. Please try again.');
+      const result = await verifyCode({ email, code }).unwrap();
+      Alert.alert('Success', result.message || 'Code verified successfully');
+      setStep(3);
+      setErrors({});
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || 'Invalid or expired verification code';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -109,23 +98,16 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('https://cusped-magen-unforwarded.ngrok-free.dev/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code, newPassword }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        Alert.alert('Success', 'Password reset successfully. Please login with your new password.');
-        navigation.navigate('Login');
-      } else {
-        Alert.alert('Error', data.message || 'Failed to reset password');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error. Please try again.');
+      const result = await resetPassword({ email, code, newPassword }).unwrap();
+      Alert.alert('Success', result.message || 'Password reset successfully. Please login with your new password.', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Login'),
+        },
+      ]);
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || 'Failed to reset password. Please try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

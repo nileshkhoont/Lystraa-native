@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, Animated } from 'react-native';
+import { StyleSheet, Text, Animated, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashLogoSvg from '../assets/splashLogosvg.svg';
+import Circle1 from '../assets/circle1.svg';
+import Circle2 from '../assets/circle2.svg';
 
 const SplashScreen = ({ navigation }: any) => {
 
@@ -22,30 +25,72 @@ const SplashScreen = ({ navigation }: any) => {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
-      navigation.replace('OnboardingPager');
-    }, 2000);
+    const checkAuthStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const loginDate = await AsyncStorage.getItem('loginDate');
+        const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
 
-    return () => clearTimeout(timer);
+        // Check if user is logged in
+        if (token && loginDate) {
+          const loginTimestamp = parseInt(loginDate, 10);
+          const currentTime = Date.now();
+          const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+
+          // Check if session is still valid (within 7 days)
+          if (currentTime - loginTimestamp < sevenDaysInMs) {
+            // Session valid, go to Home
+            setTimeout(() => {
+              navigation.replace('MainHome');
+            }, 1000);
+            return;
+          } else {
+            // Session expired, clear storage
+            await AsyncStorage.removeItem('token');
+            await AsyncStorage.removeItem('user');
+            await AsyncStorage.removeItem('loginDate');
+          }
+        }
+
+        // Check if user has seen onboarding before
+        if (hasSeenOnboarding === 'true') {
+          // Go directly to Login
+          setTimeout(() => {
+            navigation.replace('Login');
+          }, 1000);
+        } else {
+          // First time user, show onboarding
+          setTimeout(() => {
+            navigation.replace('OnboardingPager');
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        // On error, show onboarding
+        setTimeout(() => {
+          navigation.replace('OnboardingPager');
+        }, 1000);
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
   return (
     <LinearGradient
-      colors={['#004225', '#4C7A66']}
+      colors={['#2D6F52', '#4C7A66']}
       style={styles.container}
     >
 
       {/* TOP-LEFT CURVE */}
-      <LinearGradient
-        colors={['#0A5735', '#1E7A5A']}
-        style={styles.topLeft}
-      />
+      <View style={styles.topLeft}>
+        <Circle1 width={300} height={300} />
+      </View>
 
       {/* BOTTOM-RIGHT CURVE */}
-      <LinearGradient
-        colors={['#0A5735', '#1E7A5A']}
-        style={styles.bottomRight}
-      />
+      <View style={styles.bottomRight}>
+        <Circle2 width={300} height={300} />
+      </View>
 
       {/* 🔥 ONLY LOGO ANIMATION */}
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -69,20 +114,16 @@ const styles = StyleSheet.create({
 
   topLeft: {
     position: 'absolute',
-    top: -100,
-    left: -100,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
+    top: -150,
+    left: -150,
+    overflow: 'hidden',
   },
 
   bottomRight: {
     position: 'absolute',
-    bottom: -100,
-    right: -100,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
+    bottom: -150,
+    right: -150,
+    overflow: 'hidden',
   },
 
   tagline: {

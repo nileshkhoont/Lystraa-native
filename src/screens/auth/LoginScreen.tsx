@@ -52,6 +52,8 @@ const Login = ({ navigation }: any) => {
 
       if (token) {
         await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('loginDate', Date.now().toString());
+        await AsyncStorage.setItem('hasSeenOnboarding', 'true');
         if (user) await AsyncStorage.setItem('user', JSON.stringify(user));
 
         Toast.show({

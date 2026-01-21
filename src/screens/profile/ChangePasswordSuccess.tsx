@@ -9,14 +9,12 @@ import {
     ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-import CardHeader from '../../assets/images/cardheader.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Lock from '../../assets/images/Lock.svg';
 import LinearGradient from 'react-native-linear-gradient';
 
-
-export default function Notification() {
-    const navigation = useNavigation();
+export default function ChangePasswordSuccess() {
+    const navigation = useNavigation<any>();
 
     return (
         <View style={styles.container}>
@@ -29,7 +27,7 @@ export default function Notification() {
             >
                 {/* Header */}
                 <View style={styles.headerOuter}>
-                    <CardHeader width={420} height={220} />
+                    <ResponsiveGreenHeader height={220} />
                 </View>
 
                 {/* WHITE CARD */}
@@ -68,11 +66,11 @@ const styles = StyleSheet.create({
     },
     successText: {
         marginTop: 24,
-        width: 353,               // Figma width
+        width: 353,
         textAlign: 'center',
         fontSize: 32,
         fontWeight: '700',
-        lineHeight: 38.4,         // 120% of 32
+        lineHeight: 38.4,
         color: '#00140B',
     },
     loginBtnWrapper: {
@@ -93,9 +91,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#FFFFFF',
-        lineHeight: 18,          // ⬅️ prevents "g" cut
+        lineHeight: 18,
     },
-
 
     descriptionText: {
         marginTop: 16,
@@ -107,11 +104,10 @@ const styles = StyleSheet.create({
         color: '#666666',
     },
 
-    /* SAME AS ChangePassword */
     headerOuter: {
         height: 180,
         overflow: 'hidden',
-        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight! : 0,
     },
 
     content: {
@@ -120,16 +116,14 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         minHeight: 500,
-
         justifyContent: 'center',
         alignItems: 'center',
-
-        paddingTop: 40,   // ⬅️ THIS creates space above the lock
+        paddingTop: 40,
     },
 
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+        top: Platform.OS === 'android' ? StatusBar.currentHeight! + 60 : 90,
         left: 20,
     },
 

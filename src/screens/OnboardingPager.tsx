@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { View, FlatList, Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LandingScreen from './LandingScreen';
 import LandingScreen2 from './LandingScreen2';
 import LandingScreen3 from './LandingScreen3';
@@ -16,10 +17,12 @@ export default function OnboardingPager({ navigation }: any) {
     LandingScreen3,
   ];
 
-  const goNext = () => {
+  const goNext = async () => {
     if (index < 2) {
       flatListRef.current?.scrollToIndex({ index: index + 1, animated: true });
     } else {
+      // Mark onboarding as seen before going to Login
+      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
       navigation.replace('Login');
     }
   };

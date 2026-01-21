@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import CardHeader from '../../assets/images/cardheader.svg';
-import Arrow from '../../assets/images/Arrow 1.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
 
 export default function TermsConditionScreen() {
   const navigation = useNavigation();
@@ -22,7 +22,7 @@ export default function TermsConditionScreen() {
 
       {/* ================= GREEN HEADER ================= */}
       <View style={styles.headerOuter}>
-        <CardHeader width={420} height={220} />
+        <ResponsiveGreenHeader height={220} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <View style={styles.backRow}>

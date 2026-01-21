@@ -18,9 +18,9 @@ import {
   GradientButton,
   StarRating,
   InputField,
+  ResponsiveGreenHeader,
 } from '../../components/CommonComponents';
-import CardHeader from '../../assets/images/cardheader.svg';
-import Arrow from '../../assets/images/Arrow 1.svg';
+import Arrow from '../../assets/images/Arrow1.svg';
 import { useSubmitRatingMutation, useGetMyRatingQuery } from '../../api/rating/ratingApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -141,7 +141,7 @@ export default function RateUsScreen() {
 
         {/* ================= GREEN HEADER ================= */}
         <View style={[styles.headerOuter, { width }]}>
-        <CardHeader width={width} height={220} />
+        <ResponsiveGreenHeader height={220} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <View style={styles.backRow}>

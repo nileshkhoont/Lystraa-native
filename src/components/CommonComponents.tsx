@@ -10,8 +10,10 @@ import {
   TextStyle,
   TextInputProps,
   TouchableOpacityProps,
+  useWindowDimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import CardHeader from '../assets/images/cardheader.svg';
 
 // ============================================
 // TYPES & INTERFACES
@@ -51,6 +53,20 @@ interface ErrorTextProps {
   error?: string;
   style?: TextStyle;
 }
+
+interface ResponsiveHeaderProps {
+  height?: number;
+}
+
+// ============================================
+// RESPONSIVE GREEN HEADER COMPONENT
+// ============================================
+
+export const ResponsiveGreenHeader: React.FC<ResponsiveHeaderProps> = ({ height = 220 }) => {
+  const { width } = useWindowDimensions();
+  
+  return <CardHeader width={width} height={height} preserveAspectRatio="none" />;
+};
 
 // ============================================
 // GRADIENT BUTTON COMPONENT

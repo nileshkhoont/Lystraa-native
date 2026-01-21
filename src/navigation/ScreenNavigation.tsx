@@ -7,7 +7,7 @@ import LandingScreen3 from '../screens/LandingScreen3';
 import LoginScreen from '../screens/auth/LoginScreen';
 import CreateAccount from '../screens/auth/CreateAccount';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import HomeScreen from '../screens/HomeScreen';
+import HomeScreen from '../screens/profile/ProfileScreen';
 import OldPasswordScreen from '../screens/auth/OldPasswordScreen';
 import PrivacyPolicyScreen from '../screens/profile/PrivacyPolicyScreen';
 import TermsConditionScreen from '../screens/profile/TermsConditionScreen';
@@ -22,14 +22,23 @@ import RateUsScreen from '../screens/profile/RateUsScreen';
 import MainHomeScreen from '../screens/MainHomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import LikeScreen from '../screens/LikeScreen';
+import ProductDetailScreen from '../screens/ProductDetailScreen';
 const Stack = createStackNavigator();
 import Toast from 'react-native-toast-message';
-const ScreenNavigation = () => {
+
+const ScreenNavigation = ({ initialRoute }: { initialRoute: string }) => {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onStateChange={() => {
+        // Prevent state persistence
+      }}
+    >
       <Stack.Navigator
-        initialRouteName="Splash"
-        screenOptions={{ headerShown: false }}
+        initialRouteName={initialRoute}
+        screenOptions={{ 
+          headerShown: false,
+          gestureEnabled: false,
+        }}
       >
 
         {/* Splash → Onboarding → Login */}
@@ -59,6 +68,7 @@ const ScreenNavigation = () => {
         <Stack.Screen name="MainHome" component={MainHomeScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Like" component={LikeScreen} />
+        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

@@ -8,22 +8,33 @@ import {
     Platform,
     TouchableOpacity,
     TextInput,
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import CardHeader from '../../assets/images/cardheader.svg';
-import Arrow from '../../assets/images/Arrow 1.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
 import Email from '../../assets/images/Email.svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { validateEmail } from '../../utils/validation';
+import { useSubmitHelpRequestMutation } from '../../api/help/helpApi';
+
+interface FormErrors {
+    topic: string;
+    message: string;
+    email: string;
+}
 
 export default function NeedHelp() {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
 
-    const [topic, setTopic] = useState('');
-    const [message, setMessage] = useState('');
-    const [email, setEmail] = useState('');
+    const [topic, setTopic] = useState<string>('');
+    const [message, setMessage] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
 
-    const [errors, setErrors] = useState({
+    const [submitHelpRequest, { isLoading }] = useSubmitHelpRequestMutation();
+
+    const [errors, setErrors] = useState<FormErrors>({
         topic: '',
         message: '',
         email: '',
@@ -31,21 +42,21 @@ export default function NeedHelp() {
 
     /* ---------------- VALIDATION ---------------- */
 
-    const validateTopic = (text) => {
+    const validateTopic = (text: string): string => {
         if (!text.trim()) return 'Please enter topic';
         return '';
     };
 
-    const validateMessage = (text) => {
+    const validateMessage = (text: string): string => {
         if (!text.trim()) return 'Please enter message';
         return '';
     };
 
-    const validateEmailField = (text) => {
+    const validateEmailField = (text: string): string => {
         return validateEmail(text);
     };
 
-    const handleSend = () => {
+    const handleSend = async (): Promise<void> => {
         const topicErr = validateTopic(topic);
         const messageErr = validateMessage(message);
         const emailErr = validateEmailField(email);
@@ -59,7 +70,32 @@ export default function NeedHelp() {
             return;
         }
 
-        alert('Message sent successfully!');
+        try {
+            console.log('🔄 Submitting help request...');
+            const result = await submitHelpRequest({
+                topic,
+                description: message,
+                email,
+            }).unwrap();
+            
+            console.log('✅ Help request submitted:', result);
+            Alert.alert('Success', result.message || 'Message sent successfully!', [
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        // Clear form
+                        setTopic('');
+                        setMessage('');
+                        setEmail('');
+                        setErrors({ topic: '', message: '', email: '' });
+                    },
+                },
+            ]);
+        } catch (error: any) {
+            console.error('❌ Help request error:', error);
+            const errorMessage = error?.data?.message || 'Failed to send message. Please try again.';
+            Alert.alert('Error', errorMessage);
+        }
     };
 
     return (
@@ -68,7 +104,7 @@ export default function NeedHelp() {
 
             {/* ================= GREEN HEADER ================= */}
             <View style={styles.headerOuter}>
-                <CardHeader width={420} height={220} />
+                <ResponsiveGreenHeader height={220} />
 
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <View style={styles.backRow}>
@@ -95,7 +131,7 @@ export default function NeedHelp() {
                         placeholder="Enter topic"
                         placeholderTextColor="#9CA3AF"
                         value={topic}
-                        onChangeText={(text) => {
+                        onChangeText={(text: string) => {
                             setTopic(text);
                             setErrors(prev => ({ ...prev, topic: validateTopic(text) }));
                         }}
@@ -110,7 +146,7 @@ export default function NeedHelp() {
                         multiline
                         textAlignVertical="top"
                         value={message}
-                        onChangeText={(text) => {
+                        onChangeText={(text: string) => {
                             setMessage(text);
                             setErrors(prev => ({ ...prev, message: validateMessage(text) }));
                         }}
@@ -132,7 +168,7 @@ export default function NeedHelp() {
                             keyboardType="email-address"
                             autoCapitalize="none"
                             value={email}
-                            onChangeText={(text) => {
+                            onChangeText={(text: string) => {
                                 setEmail(text);
                                 setErrors(prev => ({ ...prev, email: validateEmailField(text) }));
                             }}
@@ -144,14 +180,18 @@ export default function NeedHelp() {
                         Your Email Address will be used solely for feedback to your query.
                     </Text>
 
-                    <TouchableOpacity onPress={handleSend}>
+                    <TouchableOpacity onPress={handleSend} disabled={isLoading}>
                         <LinearGradient
                             colors={['#004225', '#4C7A66']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={styles.sendBtn}
                         >
-                            <Text style={styles.sendText}>Send</Text>
+                            {isLoading ? (
+                                <ActivityIndicator color="#FFF" />
+                            ) : (
+                                <Text style={styles.sendText}>Send</Text>
+                            )}
                         </LinearGradient>
                     </TouchableOpacity>
 
@@ -171,12 +211,12 @@ const styles = StyleSheet.create({
     headerOuter: {
         height: 180,
         overflow: 'hidden',
-        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+        marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight! : 0,
     },
 
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+        top: Platform.OS === 'android' ? StatusBar.currentHeight! + 60 : 90,
         left: 20,
     },
 
@@ -214,8 +254,6 @@ const styles = StyleSheet.create({
         marginTop: 8,
         paddingHorizontal: 12,
         backgroundColor: '#fff',
-
-        // 🔥 Fix placeholder jump
         paddingVertical: 0,
         textAlignVertical: 'center',
     },
@@ -247,8 +285,6 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 16,
         color: '#111827',
-
-        // 🔥 Fix placeholder jump
         paddingVertical: 0,
         textAlignVertical: 'center',
     },

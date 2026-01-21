@@ -13,49 +13,78 @@ import {
   KeyboardAvoidingView
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { launchImageLibrary } from "react-native-image-picker";
-import CardHeader from "../../assets/images/cardheader.svg";
-import Arrow from "../../assets/images/Arrow 1.svg";
+import { launchImageLibrary, Asset } from "react-native-image-picker";
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
+import { useNavigation } from "@react-navigation/native";
 
-export default function EditProfileScreen({ navigation }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [image, setImage] = useState(null);
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  profileImage?: string;
+  localImage?: string;
+}
+
+export default function EditProfileScreen() {
+  const navigation = useNavigation<any>();
+  
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [image, setImage] = useState<Asset | null>(null);
 
   // 🔐 Ask permission
-  const requestPermission = async () => {
+  const requestPermission = async (): Promise<void> => {
     if (Platform.OS === "android") {
-      await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES ||
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-      );
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+          {
+            title: "Photo Library Permission",
+            message: "App needs access to your photos",
+            buttonNeutral: "Ask Me Later",
+            buttonNegative: "Cancel",
+            buttonPositive: "OK"
+          }
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log("Permission denied");
+        }
+      } catch (err) {
+        console.warn(err);
+      }
     }
   };
 
   useEffect(() => {
-    requestPermission();
+    // Delay permission request to ensure Activity is ready
+    const timer = setTimeout(() => {
+      requestPermission();
+    }, 500);
 
-    const loadUser = async () => {
+    const loadUser = async (): Promise<void> => {
       const data = await AsyncStorage.getItem("user");
       if (data) {
-        const u = JSON.parse(data);
+        const u: UserData = JSON.parse(data);
         setFirstName(u.firstName);
         setLastName(u.lastName);
         setEmail(u.email);
         if (u.profileImage) {
           setImage({
             uri: "https://cusped-magen-unforwarded.ngrok-free.dev" + u.profileImage
-          });
+          } as Asset);
         }
       }
     };
 
     loadUser();
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 📷 Open Gallery
-  const pickImage = () => {
+  const pickImage = (): void => {
     launchImageLibrary(
       {
         mediaType: "photo",
@@ -71,15 +100,15 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   // ⬆ Upload Profile
-  const handleUpdate = async () => {
+  const handleUpdate = async (): Promise<void> => {
     try {
       // Save locally first for immediate display
-      const updatedUser = {
+      const updatedUser: UserData = {
         firstName,
         lastName,
         email,
-        profileImage: image?.uri || null,
-        localImage: image?.uri || null // Store local image URI
+        profileImage: image?.uri || undefined,
+        localImage: image?.uri || undefined
       };
 
       await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
@@ -98,7 +127,7 @@ export default function EditProfileScreen({ navigation }) {
             uri: image.uri,
             type: image.type || "image/jpeg",
             name: image.fileName || "profile.jpg"
-          });
+          } as any);
         }
 
         const res = await fetch(
@@ -140,7 +169,7 @@ export default function EditProfileScreen({ navigation }) {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
           {/* GREEN HEADER */}
           <View style={styles.headerOuter}>
-            <CardHeader width={420} height={220} />
+            <ResponsiveGreenHeader height={220} />
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
               <View style={styles.backRow}>
                 <Arrow width={22} height={22} />
@@ -217,12 +246,12 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: "hidden",
-    marginTop: Platform.OS === "android" ? -StatusBar.currentHeight : 0
+    marginTop: Platform.OS === "android" ? -StatusBar.currentHeight! : 0
   },
 
   backButton: {
     position: "absolute",
-    top: Platform.OS === "android" ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === "android" ? StatusBar.currentHeight! + 60 : 90,
     left: 20
   },
 

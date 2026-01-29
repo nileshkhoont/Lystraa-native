@@ -4,7 +4,9 @@ import RNBootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenNavigation from './src/navigation/ScreenNavigation';
 import { store } from './src/app/store';
-import Toast from 'react-native-toast-message';   
+import Toast from 'react-native-toast-message';
+import { AdMobProvider } from './src/components/AdMobProvider';
+import { AdTestButton } from './src/components/AdTestButton';
 import './svg.d.ts';
 
 const App = () => {
@@ -57,8 +59,10 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      <ScreenNavigation initialRoute={initialRoute} />
-      <Toast />   
+      <AdMobProvider enableAutoAds={true}>
+        <ScreenNavigation initialRoute={initialRoute} />
+        <Toast />
+      </AdMobProvider>
     </Provider>
   );
 };

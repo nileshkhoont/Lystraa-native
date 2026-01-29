@@ -26,7 +26,7 @@ interface UserData {
   localImage?: string;
 }
 
-export default function EditProfileScreen() {
+const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   
   const [firstName, setFirstName] = useState<string>("");
@@ -342,3 +342,5 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   }
 });
+
+export default EditProfileScreen;

@@ -2,11 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Text, Animated, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SplashLogoSvg from '../assets/splashLogosvg.svg';
-import Circle1 from '../assets/circle1.svg';
-import Circle2 from '../assets/circle2.svg';
+import SplashLogoSvg from '../../assets/onboarding/splashLogosvg.svg';
+import Circle1 from '../../assets/onboarding/circle1.svg';
+import Circle2 from '../../assets/onboarding/circle2.svg';
 
-const SplashScreen = ({ navigation }: any) => {
+interface SplashScreenProps {
+  navigation: any;
+}
+
+const SplashScreen = ({ navigation }: SplashScreenProps) => {
 
   const scaleAnim = useRef(new Animated.Value(0.6)).current; // start small
 

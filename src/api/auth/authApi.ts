@@ -33,12 +33,25 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+export interface User {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profileImage?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: any;
-  data?: any;
+  user?: User;
+  data?: {
+    token?: string;
+    user?: User;
+  };
 }
 
 export const authApi = baseApi.injectEndpoints({

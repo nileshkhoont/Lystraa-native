@@ -29,7 +29,11 @@ import Eyeclo from '../../assets/onboarding/eyeclo.svg';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const CreateAccount = ({ navigation }: any) => {
+interface NavigationProp {
+  navigation: any;
+}
+
+const CreateAccount = ({ navigation }: NavigationProp) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');

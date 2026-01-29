@@ -22,7 +22,11 @@ import { useLoginMutation } from '../../api/auth/authApi';
 import { validateEmail } from '../../utils/validation';
 import Toast from 'react-native-toast-message';
 
-const Login = ({ navigation }: any) => {
+interface NavigationProp {
+  navigation: any;
+}
+
+const Login = ({ navigation }: NavigationProp) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -198,8 +202,6 @@ const Login = ({ navigation }: any) => {
   );
 };
 
-export default Login;
-
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -315,3 +317,5 @@ const styles = StyleSheet.create({
     borderColor: '#d32f2f',
   },
 });
+
+export default Login;

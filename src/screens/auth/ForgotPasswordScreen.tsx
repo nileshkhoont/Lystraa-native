@@ -20,7 +20,11 @@ import Eyeclose from '../../assets/onboarding/eyeclose.svg';
 import { validateEmail, validatePassword } from '../../utils/validation';
 import { useForgotPasswordMutation, useVerifyCodeMutation, useResetPasswordMutation } from '../../api/auth/authApi';
 
-const ForgotPasswordScreen = ({ navigation }: any) => {
+interface NavigationProp {
+  navigation: any;
+}
+
+const ForgotPasswordScreen = ({ navigation }: NavigationProp) => {
   const [step, setStep] = useState(1); // 1: Email, 2: Code, 3: New Password
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -262,8 +266,6 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
   );
 };
 
-export default ForgotPasswordScreen;
-
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -364,3 +366,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default ForgotPasswordScreen;

@@ -22,7 +22,7 @@ interface NotificationCardProps {
   text: string;
 }
 
-export default function Notification() {
+const Notification: React.FC = () => {
   const navigation = useNavigation<any>();
 
   return (
@@ -170,3 +170,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+export default Notification;

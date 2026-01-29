@@ -7,11 +7,17 @@ import LandingScreen3 from './LandingScreen3';
 
 const { width } = Dimensions.get('window');
 
-export default function OnboardingPager({ navigation }: any) {
-  const flatListRef = useRef<FlatList>(null);
-  const [index, setIndex] = useState(0);
+interface OnboardingPagerProps {
+  navigation: any;
+}
 
-  const screens = [
+export default function OnboardingPager({ navigation }: OnboardingPagerProps) {
+  const flatListRef = useRef<FlatList>(null);
+  const [index, setIndex] = useState<number>(0);
+
+  type ScreenComponent = React.ComponentType<{ goNext: () => void; index: number }>;
+
+  const screens: ScreenComponent[] = [
     LandingScreen,
     LandingScreen2,
     LandingScreen3,

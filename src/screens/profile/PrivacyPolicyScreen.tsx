@@ -13,7 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 // import Arrow from '../../assets/images/Arrow 1.svg';
 import Arrow from '../../assets/images/Arrow1.svg';
-export default function PrivacyPolicyScreen() {
+
+const PrivacyPolicyScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();   // 🔥 responsive width
 
@@ -100,12 +101,12 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
 
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 60 : 90,
     left: 20,
   },
 
@@ -159,3 +160,5 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
 });
+
+export default PrivacyPolicyScreen;

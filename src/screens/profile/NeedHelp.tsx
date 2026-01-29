@@ -25,7 +25,7 @@ interface FormErrors {
     email: string;
 }
 
-export default function NeedHelp() {
+const NeedHelp: React.FC = () => {
     const navigation = useNavigation<any>();
 
     const [topic, setTopic] = useState<string>('');
@@ -53,7 +53,8 @@ export default function NeedHelp() {
     };
 
     const validateEmailField = (text: string): string => {
-        return validateEmail(text);
+        const error = validateEmail(text);
+        return error ?? '';
     };
 
     const handleSend = async (): Promise<void> => {
@@ -309,3 +310,5 @@ const styles = StyleSheet.create({
     errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
     errorBorder: { borderColor: '#EF4444' },
 });
+
+export default NeedHelp;

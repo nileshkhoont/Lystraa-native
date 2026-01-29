@@ -452,7 +452,6 @@ const styles = StyleSheet.create({
   },
   starText: {
     color: '#FFD700',
-  StarRating,
   },
 });
 

@@ -25,7 +25,7 @@ interface PasswordErrors {
     confirmPassword: string;
 }
 
-export default function ChangePassword() {
+const ChangePassword: React.FC = () => {
     const navigation = useNavigation<any>();
 
     const [oldPassword, setOldPassword] = useState<string>('');
@@ -52,7 +52,8 @@ export default function ChangePassword() {
     };
 
     const validateNew = (text: string): string => {
-        return validatePassword(text);
+        const error = validatePassword(text);
+        return error ?? '';
     };
 
     const validateConfirm = (text: string): string => {
@@ -337,3 +338,5 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
+
+export default ChangePassword;

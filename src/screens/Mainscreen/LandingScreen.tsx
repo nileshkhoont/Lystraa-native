@@ -8,16 +8,21 @@ import {
     Dimensions,
     Platform,
 } from 'react-native';
-import { GradientButton, DotIndicator } from '../components/CommonComponents';
-import Group6860 from '../assets/images/6860.svg';
-import Group6861 from '../assets/images/6861.svg';
-import Group6862 from '../assets/images/6862.svg';
+import { GradientButton, DotIndicator } from '../../components/CommonComponents';
+import Group6860 from '../../assets/images/6860.svg';
+import Group6861 from '../../assets/images/6861.svg';
+import Group6862 from '../../assets/images/6862.svg';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;   // 20px padding both sides
 const CARD_HEIGHT = CARD_WIDTH * 0.345; // keeps Figma ratio
 
-export default function ComparePricesScreen({ goNext, index }: any) {
+interface LandingScreenProps {
+    goNext: () => void;
+    index: number;
+}
+
+export default function ComparePricesScreen({ goNext, index }: LandingScreenProps) {
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.scrollContent}>

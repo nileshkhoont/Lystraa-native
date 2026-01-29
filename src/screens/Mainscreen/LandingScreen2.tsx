@@ -8,10 +8,10 @@ import {
     Dimensions,
     Platform,
 } from 'react-native';
-import { GradientButton, DotIndicator } from '../components/CommonComponents';
-import A1 from '../assets/images/a1.svg';
-import A2 from '../assets/images/a2.svg';
-import Lystraa1 from '../assets/images/lystraa1.svg';
+import { GradientButton, DotIndicator } from '../../components/CommonComponents';
+import A1 from '../../assets/images/a1.svg';
+import A2 from '../../assets/images/a2.svg';
+import Lystraa1 from '../../assets/images/lystraa1.svg';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -19,7 +19,12 @@ const CARD_HEIGHT = CARD_WIDTH * 0.4;
 const LOGO_WIDTH = width * 0.35;
 const LOGO_HEIGHT = LOGO_WIDTH * 0.35;
 
-export default function LandingScreen2({ goNext, index }: any) {
+interface LandingScreen2Props {
+  goNext: () => void;
+  index: number;
+}
+
+export default function LandingScreen2({ goNext, index }: LandingScreen2Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>

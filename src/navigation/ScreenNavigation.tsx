@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import LandingScreen from '../screens/LandingScreen';
-import LandingScreen2 from '../screens/LandingScreen2';
-import LandingScreen3 from '../screens/LandingScreen3';
+import LandingScreen from '../screens/Mainscreen/LandingScreen';
+import LandingScreen2 from '../screens/Mainscreen/LandingScreen2';
+import LandingScreen3 from '../screens/Mainscreen/LandingScreen3';
 import LoginScreen from '../screens/auth/LoginScreen';
 import CreateAccount from '../screens/auth/CreateAccount';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
@@ -15,14 +15,14 @@ import Notification from '../screens/profile/Notification';
 import ChangePasswordScreen from '../screens/profile/ChangePassword';
 import ChangePasswordSuccess from '../screens/profile/ChangePasswordSuccess';
 import NeedHelp from '../screens/profile/NeedHelp';
-import OnboardingPager from '../screens/OnboardingPager';
-import SplashScreen from '../screens/SplashScreen';
+import OnboardingPager from '../screens/Mainscreen/OnboardingPager';
+import SplashScreen from '../screens/Mainscreen/SplashScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import RateUsScreen from '../screens/profile/RateUsScreen';
-import MainHomeScreen from '../screens/MainHomeScreen';
-import SearchScreen from '../screens/SearchScreen';
-import LikeScreen from '../screens/LikeScreen';
-import ProductDetailScreen from '../screens/ProductDetailScreen';
+import MainHomeScreen from '../screens/Mainscreen/MainHomeScreen';
+import SearchScreen from '../screens/Mainscreen/SearchScreen';
+import LikeScreen from '../screens/Mainscreen/LikeScreen';
+import ProductDetailScreen from '../screens/Mainscreen/ProductDetailScreen';
 const Stack = createStackNavigator();
 import Toast from 'react-native-toast-message';
 
@@ -44,11 +44,8 @@ const ScreenNavigation = ({ initialRoute }: { initialRoute: string }) => {
         {/* Splash → Onboarding → Login */}
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="OnboardingPager" component={OnboardingPager} />
-        <Stack.Screen name="Landing" component={LandingScreen} />
 
-        {/* These are now controlled by swipe pager */}
-        <Stack.Screen name="Landing2" component={LandingScreen2} />
-        <Stack.Screen name="Landing3" component={LandingScreen3} />
+        {/* Landing screens are now controlled by OnboardingPager swipe pager */}
 
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

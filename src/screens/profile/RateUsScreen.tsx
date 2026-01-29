@@ -24,7 +24,7 @@ import Arrow from '../../assets/images/Arrow1.svg';
 import { useSubmitRatingMutation, useGetMyRatingQuery } from '../../api/rating/ratingApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function RateUsScreen() {
+const RateUsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
   const [rating, setRating] = useState(0);
@@ -245,11 +245,11 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 60 : 90,
     left: 20,
   },
   backRow: {
@@ -315,3 +315,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 });
+
+export default RateUsScreen;

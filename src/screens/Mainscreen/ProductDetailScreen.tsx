@@ -10,14 +10,18 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ResponsiveGreenHeader } from '../components/CommonComponents';
-import Arrow from '../assets/images/Arrow1.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+interface RouteParams {
+  product?: any;
+}
 
-export default function ProductDetailScreen() {
+const ProductDetailScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { product } = route.params || {};
-
+  const { product } = (route.params as RouteParams) || {};
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
@@ -25,7 +29,7 @@ export default function ProductDetailScreen() {
       {/* Green Header */}
       <View style={styles.headerOuter}>
         <ResponsiveGreenHeader height={140} />
-        
+
         {/* Back Button */}
         <TouchableOpacity
           style={styles.backButton}
@@ -47,10 +51,10 @@ export default function ProductDetailScreen() {
         >
           {/* Product Image */}
           <View style={styles.imageContainer}>
-            {product?.imageComponent && 
-              React.createElement(product.imageComponent, { 
-                width: 250, 
-                height: 250 
+            {product?.imageComponent &&
+              React.createElement(product.imageComponent, {
+                width: 250,
+                height: 250
               })
             }
           </View>
@@ -59,9 +63,9 @@ export default function ProductDetailScreen() {
           <View style={styles.infoSection}>
             <View style={styles.brandLogoContainer}>
               {product?.brandComponent &&
-                React.createElement(product.brandComponent, { 
-                  width: 40, 
-                  height: 40 
+                React.createElement(product.brandComponent, {
+                  width: 40,
+                  height: 40
                 })
               }
             </View>
@@ -95,7 +99,7 @@ export default function ProductDetailScreen() {
             {/* Where to Buy */}
             <View style={styles.whereToBuySection}>
               <Text style={styles.sectionTitle}>Where to Buy</Text>
-              
+
               {product?.stores?.map((store: any, index: number) => (
                 <View key={index} style={styles.storeCard}>
                   <Text style={styles.storeName}>{store.name}</Text>
@@ -105,23 +109,23 @@ export default function ProductDetailScreen() {
                   </TouchableOpacity>
                 </View>
               )) || (
-                <>
-                  <View style={styles.storeCard}>
-                    <Text style={styles.storeName}>Amazon</Text>
-                    <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
-                    <TouchableOpacity style={styles.storeButton}>
-                      <Text style={styles.storeButtonText}>Visit Store</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.storeCard}>
-                    <Text style={styles.storeName}>Flipkart</Text>
-                    <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
-                    <TouchableOpacity style={styles.storeButton}>
-                      <Text style={styles.storeButtonText}>Visit Store</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
+                  <>
+                    <View style={styles.storeCard}>
+                      <Text style={styles.storeName}>Amazon</Text>
+                      <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
+                      <TouchableOpacity style={styles.storeButton}>
+                        <Text style={styles.storeButtonText}>Visit Store</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <View style={styles.storeCard}>
+                      <Text style={styles.storeName}>Flipkart</Text>
+                      <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
+                      <TouchableOpacity style={styles.storeButton}>
+                        <Text style={styles.storeButtonText}>Visit Store</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
             </View>
           </View>
         </ScrollView>
@@ -138,17 +142,19 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 140,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 20 : 55,
+    top: Platform.OS === 'android'
+      ? (StatusBar.currentHeight ?? 0) + 47  // +20 ne +5 karo
+      : 55,
     left: 20,
     zIndex: 10,
   },
   headerTitle: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 20 : 55,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 45 : 55,
     left: 60,
     fontSize: 20,
     fontWeight: '600',
@@ -156,7 +162,7 @@ const styles = StyleSheet.create({
   },
   content: {
     backgroundColor: '#FFFFFF',
-    marginTop: -32,
+    marginTop: -24,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     flex: 1,
@@ -285,3 +291,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default ProductDetailScreen;

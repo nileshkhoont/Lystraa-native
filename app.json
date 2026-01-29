@@ -1,4 +1,7 @@
 {
   "name": "lystraa",
-  "displayName": "lystraa"
+  "displayName": "lystraa",
+   "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-5363043234889926~1262699797"
+  }
 }

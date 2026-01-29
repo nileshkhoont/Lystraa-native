@@ -6,10 +6,19 @@ export interface HelpRequest {
   email: string;
 }
 
+export interface HelpData {
+  _id?: string;
+  topic?: string;
+  description?: string;
+  email?: string;
+  status?: string;
+  createdAt?: string;
+}
+
 export interface HelpResponse {
   success: boolean;
   message: string;
-  data?: any;
+  data?: HelpData;
 }
 
 export const helpApi = baseApi.injectEndpoints({

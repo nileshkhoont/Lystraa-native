@@ -10,11 +10,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ResponsiveGreenHeader } from '../components/CommonComponents';
-import Arrow from '../assets/images/Arrow1.svg';
-import BottomBar from '../components/BottomBar';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import Arrow from '../../assets/images/Arrow1.svg';
+import BottomBar from '../../components/BottomBar';
 
-export default function SearchScreen() {
+const LikeScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
 
@@ -24,12 +24,12 @@ export default function SearchScreen() {
 
       {/* ================= GREEN HEADER ================= */}
       <View style={[styles.headerOuter, { width }]}>
-        <ResponsiveGreenHeader height={220} />
+      <ResponsiveGreenHeader height={220} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <View style={styles.backRow}>
             <Arrow width={22} height={22} />
-            <Text style={styles.title}>Search Screen</Text>
+            <Text style={styles.title}>Like Screen</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -41,7 +41,7 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
         >
-         <Text>This is SearchScreen</Text>
+         <Text>This is LikeScreen</Text>
         </ScrollView>
       </View>
 
@@ -61,12 +61,12 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
 
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 60 : 90,
     left: 20,
   },
 
@@ -120,3 +120,5 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
 });
+
+export default LikeScreen;

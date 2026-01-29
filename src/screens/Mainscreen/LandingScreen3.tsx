@@ -9,14 +9,19 @@ import {
     Platform,
     Switch,
 } from 'react-native';
-import { GradientButton, DotIndicator } from '../components/CommonComponents';
-import Frame884 from '../assets/images/Frame884.svg';
+import { GradientButton, DotIndicator } from '../../components/CommonComponents';
+import Frame884 from '../../assets/images/Frame884.svg';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.9;
+const CARD_WIDTH = width - 60; // Increased spacing on left and right
 const CARD_HEIGHT = CARD_WIDTH * 0.5;
 
-export default function LandingScreen3({ goNext, index }: any) {
+interface LandingScreen3Props {
+    goNext: () => void;
+    index: number;
+}
+
+export default function LandingScreen3({ goNext, index }: LandingScreen3Props) {
     const [notifyEnabled, setNotifyEnabled] = useState(true);
 
     return (
@@ -91,6 +96,7 @@ const styles = StyleSheet.create({
     priceCardWrap: {
         alignItems: 'center',
         marginBottom: 20,
+        paddingHorizontal: 0,
     },
 
     bottomContainer: {

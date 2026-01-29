@@ -12,15 +12,15 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ResponsiveGreenHeader } from '../components/CommonComponents';
-import LystraaLogo from '../assets/home/lystraaLogo.svg';
-import SearchIcon from '../assets/home/searchfield.svg';
-import ImageHome from '../assets/home/imagehome.svg';
-import BottomBar from '../components/BottomBar';
-import IPhone17 from '../assets/home/iphone17.svg';
-import IPhone17Pro from '../assets/home/iphone17-pro.svg';
-import GooglePixel from '../assets/home/google-pixel.svg';
-import Jean from '../assets/home/jean.svg';
+import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import LystraaLogo from '../../assets/home/lystraaLogo.svg';
+import SearchIcon from '../../assets/home/searchfield.svg';
+import ImageHome from '../../assets/home/imagehome.svg';
+import BottomBar from '../../components/BottomBar';
+import IPhone17 from '../../assets/home/iphone17.svg';
+import IPhone17Pro from '../../assets/home/iphone17-pro.svg';
+import GooglePixel from '../../assets/home/google-pixel.svg';
+import Jean from '../../assets/home/jean.svg';
 
 // Product data type
 interface Product {
@@ -28,8 +28,8 @@ interface Product {
   name: string;
   description: string;
   price: string;
-  imageComponent: any;
-  brandComponent: any;
+  imageComponent: React.FC<any>;
+  brandComponent: React.FC<any>;
   badge?: string;
 }
 
@@ -82,7 +82,7 @@ const RECENTLY_VIEWED: Product[] = [
   },
 ];
 
-export default function MainHomeScreen() {
+const MainHomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
 
@@ -226,18 +226,18 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 240,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
 
   logoContainer: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 40 : 75,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 40 : 75,
     left: 20,
   },
 
   searchContainer: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 95 : 135,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 95 : 135,
     left: 10,
     right: 10,
   },
@@ -408,3 +408,5 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
 });
+
+export default MainHomeScreen;

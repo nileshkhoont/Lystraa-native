@@ -13,7 +13,7 @@ import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Lock from '../../assets/images/Lock.svg';
 import LinearGradient from 'react-native-linear-gradient';
 
-export default function ChangePasswordSuccess() {
+const ChangePasswordSuccess: React.FC = () => {
     const navigation = useNavigation<any>();
 
     return (
@@ -139,3 +139,5 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
 });
+
+export default ChangePasswordSuccess;

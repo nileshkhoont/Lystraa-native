@@ -22,9 +22,17 @@ import Frame from "../../assets/images/Frame.svg";
 import Frame123 from "../../assets/images/Frame123.svg";
 import BottomBar from '../../components/BottomBar';
 
+interface User {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  profileImage?: string;
+  localImage?: string;
+}
+
 export default function ProfileScreen() {
-  const navigation = useNavigation();
-  const [user, setUser] = useState(null);
+  const navigation = useNavigation<any>();
+  const [user, setUser] = useState<User | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -220,12 +228,12 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: "hidden",
-    marginTop: Platform.OS === "android" ? -StatusBar.currentHeight : 0,
+    marginTop: Platform.OS === "android" ? -(StatusBar.currentHeight ?? 0) : 0,
   },
 
   backButton: {
     position: "absolute",
-    top: Platform.OS === "android" ? StatusBar.currentHeight + 60 : 90,
+    top: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) + 60 : 90,
     left: 20,
   },
 

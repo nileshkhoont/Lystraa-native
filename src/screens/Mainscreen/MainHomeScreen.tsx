@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,9 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
+import { HomeSkeleton } from '../../components/HomeSkeleton';
 import LystraaLogo from '../../assets/home/lystraaLogo.svg';
 import SearchIcon from '../../assets/home/searchfield.svg';
 import ImageHome from '../../assets/home/imagehome.svg';
@@ -85,6 +86,20 @@ const RECENTLY_VIEWED: Product[] = [
 const MainHomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
+  const isFocused = useIsFocused();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsLoading(true);
+      // Show skeleton for 1-2 seconds
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isFocused]);
 
   const handleProductPress = (product: Product) => {
     navigation.navigate('ProductDetail', { product });
@@ -118,6 +133,9 @@ const MainHomeScreen: React.FC = () => {
 
       {/* ===== WHITE CARD (NOW SAME AS SEARCHSCREEN) ===== */}
       <View style={[styles.content, { width }]}>
+        {isLoading ? (
+          <HomeSkeleton />
+        ) : (
         <ScrollView
           bounces={false}
           showsVerticalScrollIndicator={false}
@@ -208,6 +226,7 @@ const MainHomeScreen: React.FC = () => {
             </ScrollView>
           </View>
         </ScrollView>
+        )}
       </View>
 
       <BottomBar />

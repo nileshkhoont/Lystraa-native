@@ -8,12 +8,13 @@ import {
   Platform,
   TouchableOpacity,
   useWindowDimensions,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Arrow from '../../assets/images/Arrow1.svg';
 import BottomBar from '../../components/BottomBar';
-
+import SearchIcon from '../../assets/home/searchfield.svg';
 const SearchScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
@@ -25,13 +26,16 @@ const SearchScreen: React.FC = () => {
       {/* ================= GREEN HEADER ================= */}
       <View style={[styles.headerOuter, { width }]}>
         <ResponsiveGreenHeader height={220} />
-
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <View style={styles.backRow}>
-            <Arrow width={22} height={22} />
-            <Text style={styles.title}>Search Screen</Text>
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <SearchIcon width={20} height={20} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search to compare prices"
+              placeholderTextColor="rgba(255, 255, 255, 0.7)"
+            />
           </View>
-        </TouchableOpacity>
+        </View>
       </View>
 
       {/* ================= WHITE CARD ================= */}
@@ -41,7 +45,7 @@ const SearchScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
         >
-         <Text>This is SearchScreen</Text>
+          <Text>This is SearchScreen</Text>
         </ScrollView>
       </View>
 
@@ -61,7 +65,6 @@ const styles = StyleSheet.create({
   headerOuter: {
     height: 180,
     overflow: 'hidden',
-    marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0,
   },
 
   backButton: {
@@ -119,6 +122,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 46,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 12,
+  },
+
+  searchIcon: {
+    marginRight: 15,
+  },
+
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#FFFFFF',
+    padding: 0,
+
+  },
+
+  searchContainer: {
+    position: 'absolute',
+    top: 90,        // 🔥 fixed straight position
+    left: 16,
+    right: 16,
+  },
+
 });
 
 export default SearchScreen;

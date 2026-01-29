@@ -17,6 +17,7 @@ import { launchImageLibrary, Asset } from "react-native-image-picker";
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Arrow from '../../assets/images/Arrow1.svg';
 import { useNavigation } from "@react-navigation/native";
+import Toast from 'react-native-toast-message';
 
 interface UserData {
   firstName: string;
@@ -148,12 +149,35 @@ const EditProfileScreen: React.FC = () => {
         }
       }
 
-      // Navigate back regardless of server response
-      navigation.goBack();
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated Successfully',
+        text2: 'Your profile has been updated',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+
+      // Navigate back after 1.5 seconds
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error) {
       console.log("Update error:", error);
-      // Still navigate back even if upload fails
-      navigation.goBack();
+      
+      // Show success toast even if upload fails (saved locally)
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated Successfully',
+        text2: 'Your changes have been saved',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+      
+      // Navigate back after 1.5 seconds
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     }
   };
 

@@ -145,6 +145,7 @@ const ForgotPasswordScreen = ({ navigation }: NavigationProp) => {
                 <TextInput
                   style={styles.input}
                   placeholder="you@email.com"
+                  placeholderTextColor="#9CA3AF"
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
@@ -174,6 +175,7 @@ const ForgotPasswordScreen = ({ navigation }: NavigationProp) => {
                 <TextInput
                   style={[styles.input, { marginLeft: 0 }]}
                   placeholder="Enter 6-digit code"
+                  placeholderTextColor="#9CA3AF"
                   value={code}
                   onChangeText={(text) => {
                     setCode(text);
@@ -208,6 +210,7 @@ const ForgotPasswordScreen = ({ navigation }: NavigationProp) => {
                 <TextInput
                   style={styles.input}
                   placeholder="********"
+                  placeholderTextColor="#9CA3AF"
                   value={newPassword}
                   onChangeText={(text) => {
                     setNewPassword(text);
@@ -232,6 +235,7 @@ const ForgotPasswordScreen = ({ navigation }: NavigationProp) => {
                 <TextInput
                   style={styles.input}
                   placeholder="********"
+                  placeholderTextColor="#9CA3AF"
                   value={confirmPassword}
                   onChangeText={(text) => {
                     setConfirmPassword(text);
@@ -319,6 +323,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     paddingRight: 40,
+    color: '#111827',
+    fontSize: 16,
   },
   inputError: {
     borderColor: '#d32f2f',

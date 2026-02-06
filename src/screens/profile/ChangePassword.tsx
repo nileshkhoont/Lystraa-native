@@ -178,6 +178,7 @@ const ChangePassword: React.FC = () => {
                                 value={oldPassword}
                                 onChangeText={handleOldChange}
                                 placeholder="Old password"
+                                placeholderTextColor="#9CA3AF"
                             />
                             <TouchableOpacity onPress={() => setShowOld(!showOld)} style={styles.eyeIcon}>
                                 {showOld ? <EyeOpen /> : <EyeClose />}
@@ -198,6 +199,7 @@ const ChangePassword: React.FC = () => {
                                 value={newPassword}
                                 onChangeText={handleNewChange}
                                 placeholder="New password"
+                                placeholderTextColor="#9CA3AF"
                             />
                             <TouchableOpacity onPress={() => setShowNew(!showNew)} style={styles.eyeIcon}>
                                 {showNew ? <EyeOpen /> : <EyeClose />}
@@ -216,6 +218,7 @@ const ChangePassword: React.FC = () => {
                                 value={confirmPassword}
                                 onChangeText={handleConfirmChange}
                                 placeholder="Confirm password"
+                                placeholderTextColor="#9CA3AF"
                             />
                             <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeIcon}>
                                 {showConfirm ? <EyeOpen /> : <EyeClose />}

@@ -257,6 +257,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingVertical: 0,
         textAlignVertical: 'center',
+        color: '#111827',
+        fontSize: 16,
     },
 
     messageBox: {
@@ -267,6 +269,8 @@ const styles = StyleSheet.create({
         marginTop: 16,
         padding: 12,
         backgroundColor: '#fff',
+        color: '#111827',
+        fontSize: 16,
     },
 
     emailBox: {

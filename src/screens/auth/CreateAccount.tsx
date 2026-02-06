@@ -167,6 +167,7 @@ const CreateAccount = ({ navigation }: NavigationProp) => {
               <TextInput
                 style={styles.input}
                 placeholder="First Name"
+                placeholderTextColor="#9CA3AF"
                 value={firstName}
                 onChangeText={handleFirstNameChange}
               />
@@ -181,6 +182,7 @@ const CreateAccount = ({ navigation }: NavigationProp) => {
               <TextInput
                 style={styles.input}
                 placeholder="Last Name"
+                placeholderTextColor="#9CA3AF"
                 value={lastName}
                 onChangeText={handleLastNameChange}
               />
@@ -197,6 +199,7 @@ const CreateAccount = ({ navigation }: NavigationProp) => {
               <TextInput
                 style={styles.input}
                 placeholder="Email"
+                placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={handleEmailChange}
                 keyboardType="email-address"
@@ -215,6 +218,7 @@ const CreateAccount = ({ navigation }: NavigationProp) => {
               <TextInput
                 style={styles.input}
                 placeholder="Password"
+                placeholderTextColor="#9CA3AF"
                 value={password}
                 onChangeText={handlePasswordChange}
 
@@ -338,7 +342,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     fontSize: 16,
-    color: '#666666',
+    color: '#111827',
     fontFamily: 'Manrope',
   },
   terms: {

@@ -228,6 +228,7 @@ const EditProfileScreen: React.FC = () => {
               onChangeText={setFirstName}
               style={styles.input}
               placeholder="First Name"
+              placeholderTextColor="#9CA3AF"
             />
 
             {/* Last Name */}
@@ -237,6 +238,7 @@ const EditProfileScreen: React.FC = () => {
               onChangeText={setLastName}
               style={styles.input}
               placeholder="Last Name"
+              placeholderTextColor="#9CA3AF"
             />
 
             {/* Email */}
@@ -246,6 +248,7 @@ const EditProfileScreen: React.FC = () => {
               onChangeText={setEmail}
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor="#9CA3AF"
               keyboardType="email-address"
               autoCapitalize="none"
             />

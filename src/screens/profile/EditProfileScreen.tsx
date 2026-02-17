@@ -10,7 +10,9 @@ import {
   Platform,
   StatusBar,
   ScrollView,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  Alert
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary, Asset } from "react-native-image-picker";
@@ -18,13 +20,17 @@ import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Arrow from '../../assets/images/Arrow1.svg';
 import { useNavigation } from "@react-navigation/native";
 import Toast from 'react-native-toast-message';
+import { 
+  useGetUserProfileQuery, 
+  useUpdateProfileWithImageMutation 
+} from '../../api/user/userApi';
 
 interface UserData {
   firstName: string;
   lastName: string;
   email: string;
   profileImage?: string;
-  localImage?: string;
+  profileImageUrl?: string;
 }
 
 const EditProfileScreen: React.FC = () => {
@@ -34,6 +40,13 @@ const EditProfileScreen: React.FC = () => {
   const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [image, setImage] = useState<Asset | null>(null);
+  const [imageChanged, setImageChanged] = useState<boolean>(false);
+
+  // Fetch user profile
+  const { data: profileData, isLoading: profileLoading, refetch } = useGetUserProfileQuery();
+  
+  // Update profile mutation
+  const [updateProfile, { isLoading: updateLoading }] = useUpdateProfileWithImageMutation();
 
   // 🔐 Ask permission
   const requestPermission = async (): Promise<void> => {
@@ -64,25 +77,27 @@ const EditProfileScreen: React.FC = () => {
       requestPermission();
     }, 500);
 
-    const loadUser = async (): Promise<void> => {
-      const data = await AsyncStorage.getItem("user");
-      if (data) {
-        const u: UserData = JSON.parse(data);
-        setFirstName(u.firstName);
-        setLastName(u.lastName);
-        setEmail(u.email);
-        if (u.profileImage) {
-          setImage({
-            uri: "https://cusped-magen-unforwarded.ngrok-free.dev" + u.profileImage
-          } as Asset);
-        }
+    // Load user data from API
+    if (profileData?.success && profileData.user) {
+      const u = profileData.user;
+      console.log('📥 Edit Profile - Loaded user data:', {
+        firstName: u.firstName,
+        profileImage: u.profileImage,
+        profileImageUrl: u.profileImageUrl
+      });
+      setFirstName(u.firstName);
+      setLastName(u.lastName);
+      setEmail(u.email);
+      if (u.profileImageUrl) {
+        console.log('🖼️ Setting image URI:', u.profileImageUrl);
+        setImage({
+          uri: u.profileImageUrl
+        } as Asset);
       }
-    };
-
-    loadUser();
+    }
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [profileData]);
 
   // 📷 Open Gallery
   const pickImage = (): void => {
@@ -95,6 +110,7 @@ const EditProfileScreen: React.FC = () => {
         if (res.didCancel) return;
         if (res.assets && res.assets.length > 0) {
           setImage(res.assets[0]);
+          setImageChanged(true);
         }
       }
     );
@@ -103,81 +119,58 @@ const EditProfileScreen: React.FC = () => {
   // ⬆ Upload Profile
   const handleUpdate = async (): Promise<void> => {
     try {
-      // Save locally first for immediate display
-      const updatedUser: UserData = {
-        firstName,
-        lastName,
-        email,
-        profileImage: image?.uri || undefined,
-        localImage: image?.uri || undefined
-      };
+      const formData = new FormData();
+      formData.append("firstName", firstName);
+      formData.append("lastName", lastName);
+      formData.append("email", email);
 
-      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-
-      // Try to upload to server
-      const token = await AsyncStorage.getItem("token");
-
-      if (token) {
-        const formData = new FormData();
-        formData.append("firstName", firstName);
-        formData.append("lastName", lastName);
-        formData.append("email", email);
-
-        if (image?.uri) {
-          formData.append("profileImage", {
-            uri: image.uri,
-            type: image.type || "image/jpeg",
-            name: image.fileName || "profile.jpg"
-          } as any);
-        }
-
-        const res = await fetch(
-          "https://cusped-magen-unforwarded.ngrok-free.dev/api/auth/update",
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`
-            },
-            body: formData
-          }
-        );
-
-        const data = await res.json();
-
-        if (data.success) {
-          await AsyncStorage.setItem("user", JSON.stringify(data.user));
-        }
+      // Only append image if it was changed and is a local file
+      if (imageChanged && image?.uri && !image.uri.startsWith('http')) {
+        formData.append("profileImage", {
+          uri: image.uri,
+          type: image.type || "image/jpeg",
+          name: image.fileName || "profile.jpg"
+        } as any);
       }
 
-      // Show success toast
-      Toast.show({
-        type: 'success',
-        text1: 'Profile Updated Successfully',
-        text2: 'Your profile has been updated',
-        position: 'top',
-        visibilityTime: 2000,
-      });
+      const result = await updateProfile(formData).unwrap();
 
-      // Navigate back after 1.5 seconds
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1500);
-    } catch (error) {
-      console.log("Update error:", error);
+      console.log('✅ Update Result:', JSON.stringify(result, null, 2));
+      console.log('📸 Updated Image URL:', result.user?.profileImageUrl);
+      console.log('🖼️ Updated Image Path:', result.user?.profileImage);
+
+      if (result.success) {
+        // Force update local image state with cache-busting timestamp
+        if (result.user.profileImageUrl) {
+          setImage({
+            uri: result.user.profileImageUrl + `?t=${Date.now()}`
+          } as Asset);
+        }
+        
+        // Update AsyncStorage with the transformed user data
+        await AsyncStorage.setItem("user", JSON.stringify(result.user));
+        
+        Toast.show({
+          type: 'success',
+          text1: 'Profile Updated Successfully',
+          text2: 'Your profile has been updated',
+          position: 'top',
+          visibilityTime: 2000,
+        });
+
+        // Navigate back after 1.5 seconds
+        setTimeout(() => {
+          navigation.goBack();
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error("Update error:", error);
       
-      // Show success toast even if upload fails (saved locally)
-      Toast.show({
-        type: 'success',
-        text1: 'Profile Updated Successfully',
-        text2: 'Your changes have been saved',
-        position: 'top',
-        visibilityTime: 2000,
-      });
-      
-      // Navigate back after 1.5 seconds
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1500);
+      Alert.alert(
+        'Update Failed',
+        error?.data?.message || 'Failed to update profile. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -204,58 +197,81 @@ const EditProfileScreen: React.FC = () => {
 
           {/* WHITE CARD */}
           <View style={styles.content}>
-            {/* Avatar */}
-            <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-              <View style={styles.avatarWrapper}>
-                <Image
-                  source={
-                    image?.uri
-                      ? { uri: image.uri }
-                      : { uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }
-                  }
-                  style={styles.avatar}
-                />
-                <View style={styles.editBadge}>
-                  <Text style={{ color: "#fff", fontSize: 12 }}>✎</Text>
-                </View>
+            {profileLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#1E4D3A" />
+                <Text style={styles.loadingText}>Loading profile...</Text>
               </View>
-            </TouchableOpacity>
+            ) : (
+              <>
+                {/* Avatar */}
+                <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
+                  <View style={styles.avatarWrapper}>
+                    <Image
+                      key={image?.uri || 'default'}
+                      source={
+                        image?.uri
+                          ? { uri: image.uri }
+                          : { uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }
+                      }
+                      style={styles.avatar}
+                      onLoad={() => console.log('✅ Edit: Image loaded successfully', image?.uri)}
+                      onError={(error) => console.log('❌ Edit: Image load error:', error.nativeEvent.error)}
+                    />
+                    <View style={styles.editBadge}>
+                      <Text style={{ color: "#fff", fontSize: 12 }}>✎</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
 
-            {/* First Name */}
-            <Text style={styles.label}>First Name</Text>
-            <TextInput
-              value={firstName}
-              onChangeText={setFirstName}
-              style={styles.input}
-              placeholder="First Name"
-              placeholderTextColor="#9CA3AF"
-            />
+                {/* First Name */}
+                <Text style={styles.label}>First Name</Text>
+                <TextInput
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor="#9CA3AF"
+                  editable={!updateLoading}
+                />
 
-            {/* Last Name */}
-            <Text style={styles.label}>Last Name</Text>
-            <TextInput
-              value={lastName}
-              onChangeText={setLastName}
-              style={styles.input}
-              placeholder="Last Name"
-              placeholderTextColor="#9CA3AF"
-            />
+                {/* Last Name */}
+                <Text style={styles.label}>Last Name</Text>
+                <TextInput
+                  value={lastName}
+                  onChangeText={setLastName}
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor="#9CA3AF"
+                  editable={!updateLoading}
+                />
 
-            {/* Email */}
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+                {/* Email */}
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  style={[styles.input, styles.disabledInput]}
+                  placeholder="Email"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={false}
+                />
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
-              <Text style={styles.saveText}>Update</Text>
-            </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.saveButton, updateLoading && styles.saveButtonDisabled]} 
+                  onPress={handleUpdate}
+                  disabled={updateLoading}
+                >
+                  {updateLoading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.saveText}>Update</Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -302,6 +318,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 20,
     flex: 1
+  },
+
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B7280',
   },
 
   avatarContainer: {
@@ -354,6 +382,11 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
 
+  disabledInput: {
+    backgroundColor: "#F3F4F6",
+    color: "#9CA3AF",
+  },
+
   saveButton: {
     backgroundColor: "#1E4D3A",
     height: 50,
@@ -361,6 +394,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 32
+  },
+
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
 
   saveText: {

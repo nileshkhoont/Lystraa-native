@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   Platform,
   TouchableOpacity,
   Image,
-  Alert
+  Alert,
+  ActivityIndicator
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
@@ -21,28 +22,43 @@ import EditIcon from "../../assets/images/editicon.svg";
 import Frame from "../../assets/images/Frame.svg";
 import Frame123 from "../../assets/images/Frame123.svg";
 import BottomBar from '../../components/BottomBar';
+import { useGetUserProfileQuery } from '../../api/user/userApi';
 
 interface User {
   firstName?: string;
   lastName?: string;
   email?: string;
   profileImage?: string;
-  localImage?: string;
+  profileImageUrl?: string;
 }
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   const [user, setUser] = useState<User | null>(null);
+  
+  // Fetch user profile from API
+  const { data: profileData, isLoading, refetch } = useGetUserProfileQuery();
 
+  // Refetch on screen focus
   useFocusEffect(
     React.useCallback(() => {
-      const loadUser = async () => {
-        const data = await AsyncStorage.getItem("user");
-        if (data) setUser(JSON.parse(data));
-      };
-      loadUser();
-    }, [])
+      refetch();
+    }, [refetch])
   );
+
+  // Update local state when API data changes
+  useEffect(() => {
+    if (profileData?.success && profileData.user) {
+      console.log('====== PROFILE SCREEN DATA ======');
+      console.log('Raw Response:', JSON.stringify(profileData, null, 2));
+      console.log('📸 Profile Image URL:', profileData.user.profileImageUrl);
+      console.log('🖼️ Profile Image Path:', profileData.user.profileImage);
+      console.log('================================');
+      setUser(profileData.user);
+      // Update AsyncStorage for offline access
+      AsyncStorage.setItem("user", JSON.stringify(profileData.user));
+    }
+  }, [profileData]);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -128,91 +144,101 @@ export default function ProfileScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 160 }}
           >
-            <View style={styles.profileContent}>
-              <TouchableOpacity
-                style={styles.avatarWrapper}
-                onPress={() => navigation.navigate("EditProfile")}
-              >
-                <Image
-                  source={
-                    user?.localImage
-                      ? { uri: user.localImage }
-                      : user?.profileImage
-                      ? { uri: "https://cusped-magen-unforwarded.ngrok-free.dev" + user.profileImage }
-                      : { uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }
-                  }
-                  style={styles.avatar}
-                />
-                <View style={styles.editBadge}>
-                  <Text style={{ color: "#fff", fontSize: 10 }}>✎</Text>
-                </View>
-              </TouchableOpacity>
-
-              <View style={styles.profileRow}>
-                <View style={styles.profileInfo}>
-                  <Text style={styles.userName}>
-                    {user?.firstName} {user?.lastName}
-                  </Text>
-                  <Text style={styles.userEmail}>{user?.email}</Text>
-                </View>
-
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("EditProfile")}
-                  style={styles.rightEditIcon}
-                >
-                  <EditIcon width={20} height={20} />
-                </TouchableOpacity>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#004225" />
+                <Text style={styles.loadingText}>Loading profile...</Text>
               </View>
-            </View>
+            ) : (
+              <>
+                <View style={styles.profileContent}>
+                  <TouchableOpacity
+                    style={styles.avatarWrapper}
+                    onPress={() => navigation.navigate("EditProfile")}
+                  >
+                    <Image
+                      key={user?.profileImageUrl || 'default'}
+                      source={
+                        user?.profileImageUrl
+                          ? { uri: `${user.profileImageUrl}?t=${Date.now()}` }
+                          : { uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }
+                      }
+                      style={styles.avatar}
+                      onLoad={() => console.log('✅ Image loaded successfully')}
+                      onError={(error) => console.log('❌ Image load error:', error.nativeEvent.error)}
+                    />
+                    <View style={styles.editBadge}>
+                      <Text style={{ color: "#fff", fontSize: 10 }}>✎</Text>
+                    </View>
+                  </TouchableOpacity>
 
-            <View style={styles.settingsContainer}>
-              <Text style={styles.sectionTitle}>General</Text>
+                  <View style={styles.profileRow}>
+                    <View style={styles.profileInfo}>
+                      <Text style={styles.userName}>
+                        {user?.firstName} {user?.lastName}
+                      </Text>
+                      <Text style={styles.userEmail}>{user?.email}</Text>
+                    </View>
 
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("Notification")}>
-                <Text style={styles.rowText}>Notification</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("ChangePassword")}>
-                <Text style={styles.rowText}>Change Password</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("TermsCondition")}>
-                <Text style={styles.rowText}>Terms & Condition</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Help & Feedback</Text>
-
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("NeedHelp")}>
-                <Text style={styles.rowText}>Need Help?</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("PrivacyPolicy")}>
-                <Text style={styles.rowText}>Privacy Policy</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("RateUs")}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={styles.rowText}>Rate Us</Text>
-                  <Frame123 width={80} height={16} />
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("EditProfile")}
+                      style={styles.rightEditIcon}
+                    >
+                      <EditIcon width={20} height={20} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity style={styles.row} onPress={handleLogout}>
-                <Text style={styles.rowText}>Log Out</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
+                <View style={styles.settingsContainer}>
+                  <Text style={styles.sectionTitle}>General</Text>
 
-              <TouchableOpacity style={styles.deleteRow} onPress={handleDeleteAccount}>
-                <Frame width={16} height={16} />
-                <Text style={styles.deleteText}>Delete Account</Text>
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("Notification")}>
+                    <Text style={styles.rowText}>Notification</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("ChangePassword")}>
+                    <Text style={styles.rowText}>Change Password</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("TermsCondition")}>
+                    <Text style={styles.rowText}>Terms & Condition</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Help & Feedback</Text>
+
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("NeedHelp")}>
+                    <Text style={styles.rowText}>Need Help?</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("PrivacyPolicy")}>
+                    <Text style={styles.rowText}>Privacy Policy</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.row} onPress={() => navigation.navigate("RateUs")}>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Text style={styles.rowText}>Rate Us</Text>
+                      <Frame123 width={80} height={16} />
+                    </View>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.row} onPress={handleLogout}>
+                    <Text style={styles.rowText}>Log Out</Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.deleteRow} onPress={handleDeleteAccount}>
+                    <Frame width={16} height={16} />
+                    <Text style={styles.deleteText}>Delete Account</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </ScrollView>
         </View>
 
@@ -249,6 +275,18 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: "hidden",
     elevation: 10,
+  },
+
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B7280',
   },
 
   profileContent: { padding: 20, position: "relative" },

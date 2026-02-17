@@ -40,18 +40,72 @@ const API_BASE_URL = getApiBaseUrl();
 console.log('📡 API Base URL:', API_BASE_URL);
 console.log('📱 Platform:', Platform.OS);
 
+// Helper to get base URL without /api suffix for constructing image URLs
+export const getBaseUrl = () => {
+  const NGROK_URL = 'https://cusped-magen-unforwarded.ngrok-free.dev';
+  
+  if (NGROK_URL) {
+    return NGROK_URL;
+  }
+  
+  const USE_PHYSICAL_DEVICE = false;
+  const YOUR_COMPUTER_IP = '192.168.1.2';
+  
+  if (USE_PHYSICAL_DEVICE) {
+    return `http://${YOUR_COMPUTER_IP}:5000`;
+  }
+  
+  return Platform.select({
+    android: 'http://10.0.2.2:5000',
+    ios: 'http://localhost:5000',
+    default: 'http://localhost:5000',
+  });
+};
+
+// Helper to construct full image URL from relative path
+export const getFullImageUrl = (relativePath?: string): string | undefined => {
+  if (!relativePath) {
+    console.log('⚠️ getFullImageUrl: No path provided');
+    return undefined;
+  }
+  
+  // If already a full URL, return as-is
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    console.log('✅ getFullImageUrl: Already full URL:', relativePath);
+    return relativePath;
+  }
+  
+  // Normalize path separators (replace backslashes with forward slashes)
+  const normalizedPath = relativePath.replace(/\\/g, '/');
+  
+  // Remove leading slash if present
+  const cleanPath = normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath;
+  
+  const fullUrl = `${getBaseUrl()}/${cleanPath}`;
+  console.log('🔗 getFullImageUrl: Constructed URL:', {
+    input: relativePath,
+    normalized: normalizedPath,
+    clean: cleanPath,
+    baseUrl: getBaseUrl(),
+    result: fullUrl
+  });
+  
+  return fullUrl;
+};
+
 // Create the base API
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: API_BASE_URL,
+    timeout: 15000, // 15 seconds timeout
     prepareHeaders: async (headers) => {
       // Get token from AsyncStorage
       const token = await AsyncStorage.getItem('token');
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-      headers.set('Content-Type', 'application/json');
+      
       headers.set('Accept', 'application/json');
       // Add ngrok bypass header to skip browser warning
       headers.set('ngrok-skip-browser-warning', 'true');
@@ -62,6 +116,6 @@ export const baseApi = createApi({
       return response.status >= 200 && response.status < 300;
     },
   }),
-  tagTypes: ['Auth', 'Rating'],
+  tagTypes: ['Auth', 'Rating', 'UserProfile'],
   endpoints: () => ({}),
 });

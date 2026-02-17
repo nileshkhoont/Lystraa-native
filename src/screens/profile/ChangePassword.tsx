@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     TextInput,
     KeyboardAvoidingView,
+    ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
@@ -18,6 +19,7 @@ import EyeClose from '../../assets/onboarding/eyeclose.svg';
 import BottomBar from '../../components/BottomBar';
 import { useChangePasswordMutation } from '../../api/auth/authApi';
 import { validatePassword } from '../../utils/validation';
+import Toast from 'react-native-toast-message';
 
 interface PasswordErrors {
     oldPassword: string;
@@ -52,6 +54,8 @@ const ChangePassword: React.FC = () => {
     };
 
     const validateNew = (text: string): string => {
+        if (!text) return 'Please Enter New Password';
+        if (text === oldPassword && oldPassword) return 'New password must be different from old password';
         const error = validatePassword(text);
         return error ?? '';
     };
@@ -66,7 +70,24 @@ const ChangePassword: React.FC = () => {
 
     const handleOldChange = (text: string): void => {
         setOldPassword(text);
-        setErrors(prev => ({ ...prev, oldPassword: validateOld(text) }));
+        // Validate old password
+        const oldErr = validateOld(text);
+        // If new password is already entered, check if it's different from old
+        let newErr = errors.newPassword;
+        if (newPassword) {
+            if (newPassword === text && text) {
+                newErr = 'New password must be different from old password';
+            } else if (errors.newPassword === 'New password must be different from old password') {
+                // Clear the error if passwords are now different
+                newErr = validatePassword(newPassword) ?? '';
+            }
+        }
+        
+        setErrors(prev => ({ 
+            ...prev, 
+            oldPassword: oldErr,
+            newPassword: newErr
+        }));
     };
 
     const handleNewChange = (text: string): void => {
@@ -103,15 +124,6 @@ const ChangePassword: React.FC = () => {
 
         try {
             console.log('🔄 Attempting to change password...');
-            console.log('📤 Request data:', { oldPassword: '***', newPassword: '***', confirmNewPassword: '***' });
-            
-            // Check if token exists
-            const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
-            const token = await AsyncStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
-            if (token) {
-                console.log('🔑 Token preview:', token.substring(0, 20) + '...');
-            }
             
             const result = await changePassword({
                 oldPassword,
@@ -120,23 +132,42 @@ const ChangePassword: React.FC = () => {
             }).unwrap();
             
             console.log('✅ Password changed successfully:', result);
-            navigation.navigate('ChangePasswordSuccess');
+            
+            Toast.show({
+                type: 'success',
+                text1: 'Password Changed',
+                text2: 'Your password has been updated successfully',
+                position: 'top',
+                topOffset: 15,
+                visibilityTime: 2000,
+            });
+            
+            setTimeout(() => {
+                navigation.navigate('ChangePasswordSuccess');
+            }, 1000);
         } catch (err: any) {
-            console.error('❌ Change password error - Full error:', JSON.stringify(err, null, 2));
-            console.error('❌ Error status:', err?.status);
-            console.error('❌ Error data:', err?.data);
-            console.error('❌ Error message:', err?.message);
+            console.error('❌ Change password error:', err);
             
             let errorMessage = 'Failed to change password.';
             
-            if (err?.status === 'PARSING_ERROR') {
+            if (err?.status === 'TIMEOUT') {
+                errorMessage = 'Request timed out. Please check your connection and try again.';
+            } else if (err?.status === 'PARSING_ERROR') {
                 errorMessage = 'Server response error. Please try again.';
-                console.error('❌ PARSING ERROR - Server sent invalid response');
             } else if (err?.data?.message) {
                 errorMessage = err.data.message;
             } else if (err?.message) {
                 errorMessage = err.message;
             }
+            
+            Toast.show({
+                type: 'error',
+                text1: 'Password Change Failed',
+                text2: errorMessage,
+                position: 'top',
+                topOffset: 15,
+                visibilityTime: 3000,
+            });
             
             setErrors(prev => ({
                 ...prev,
@@ -226,8 +257,19 @@ const ChangePassword: React.FC = () => {
                         </View>
                         {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
 
-                        <TouchableOpacity onPress={handleSave} disabled={isLoading} style={styles.saveButton}>
-                            <Text style={styles.saveText}>{isLoading ? 'Saving...' : 'Save Changes'}</Text>
+                        <TouchableOpacity 
+                            onPress={handleSave} 
+                            disabled={isLoading} 
+                            style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+                        >
+                            {isLoading ? (
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator color="#FFFFFF" size="small" />
+                                    <Text style={[styles.saveText, { marginLeft: 8 }]}>Updating password...</Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.saveText}>Save Changes</Text>
+                            )}
                         </TouchableOpacity>
 
                     </View>
@@ -333,6 +375,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 32,
+    },
+
+    saveButtonDisabled: {
+        opacity: 0.6,
+    },
+
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 
     saveText: {

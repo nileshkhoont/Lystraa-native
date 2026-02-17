@@ -315,7 +315,15 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  deleteRow: { flexDirection: "row", marginTop: 20 },
+ deleteRow: {
+  flexDirection: "row",
+  alignItems: "center",   // 👈 icon & text vertically align
+  marginTop: 16,
+},
 
-  deleteText: { marginLeft: 8, color: "#EF4444" },
+deleteText: {
+  marginLeft: 10,
+  color: "#EF4444",
+  fontSize: 14,
+},
 });

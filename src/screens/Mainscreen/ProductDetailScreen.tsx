@@ -8,11 +8,13 @@ import {
   StatusBar,
   Platform,
   Image,
+  Linking,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
 import Arrow from '../../assets/images/Arrow1.svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 interface RouteParams {
   product?: any;
 }
@@ -22,6 +24,26 @@ const ProductDetailScreen: React.FC = () => {
   const route = useRoute();
   const { product } = (route.params as RouteParams) || {};
   const insets = useSafeAreaInsets();
+
+  // Helper to check if product is from API (has thumbnail) or static (has imageComponent)
+  const isApiProduct = product?.thumbnail !== undefined;
+  
+  // Format price
+  const formattedPrice = isApiProduct 
+    ? `₹${product.current_price?.toLocaleString('en-IN') || 0}`
+    : product?.price || '₹0';
+  
+  const formattedOriginalPrice = isApiProduct && product.original_price
+    ? `₹${product.original_price.toLocaleString('en-IN')}`
+    : null;
+
+  const handleVisitStore = () => {
+    if (product?.link) {
+      Linking.openURL(product.link).catch(err => 
+        console.error('Failed to open link:', err)
+      );
+    }
+  };
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
@@ -51,36 +73,59 @@ const ProductDetailScreen: React.FC = () => {
         >
           {/* Product Image */}
           <View style={styles.imageContainer}>
-            {product?.imageComponent &&
+            {isApiProduct ? (
+              <Image 
+                source={{ uri: product.thumbnail }} 
+                style={styles.productImage}
+                resizeMode="contain"
+              />
+            ) : (
+              product?.imageComponent &&
               React.createElement(product.imageComponent, {
                 width: 250,
                 height: 250
               })
-            }
+            )}
           </View>
 
           {/* Product Info */}
           <View style={styles.infoSection}>
-            <View style={styles.brandLogoContainer}>
-              {product?.brandComponent &&
-                React.createElement(product.brandComponent, {
+            {/* Brand Logo - only for static products */}
+            {!isApiProduct && product?.brandComponent && (
+              <View style={styles.brandLogoContainer}>
+                {React.createElement(product.brandComponent, {
                   width: 40,
                   height: 40
-                })
-              }
-            </View>
+                })}
+              </View>
+            )}
 
             <Text style={styles.productName}>{product?.name || 'Product Name'}</Text>
-            <Text style={styles.productDescription}>{product?.description || ''}</Text>
+            
+            {!isApiProduct && product?.description && (
+              <Text style={styles.productDescription}>{product.description}</Text>
+            )}
 
             {/* Price Section */}
             <View style={styles.priceSection}>
               <Text style={styles.priceLabel}>Price</Text>
-              <Text style={styles.price}>{product?.price || '₹0'}</Text>
+              <View style={styles.priceRow}>
+                <Text style={styles.price}>{formattedPrice}</Text>
+                {formattedOriginalPrice && (
+                  <Text style={styles.originalPrice}>{formattedOriginalPrice}</Text>
+                )}
+              </View>
+              {isApiProduct && product.discounted && (
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountText}>
+                    {Math.round(((product.original_price - product.current_price) / product.original_price) * 100)}% OFF
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {/* Badge */}
-            {product?.badge && (
+            {/* Badge - only for static products */}
+            {!isApiProduct && product?.badge && (
               <View style={styles.badgeContainer}>
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{product.badge}</Text>
@@ -100,32 +145,53 @@ const ProductDetailScreen: React.FC = () => {
             <View style={styles.whereToBuySection}>
               <Text style={styles.sectionTitle}>Where to Buy</Text>
 
-              {product?.stores?.map((store: any, index: number) => (
-                <View key={index} style={styles.storeCard}>
-                  <Text style={styles.storeName}>{store.name}</Text>
-                  <Text style={styles.storePrice}>{store.price}</Text>
-                  <TouchableOpacity style={styles.storeButton}>
+              {isApiProduct ? (
+                <View style={styles.storeCard}>
+                  <View style={styles.storeInfo}>
+                    <Text style={styles.storeName}>Flipkart</Text>
+                    <Text style={styles.storePrice}>{formattedPrice}</Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.storeButton}
+                    onPress={handleVisitStore}
+                  >
                     <Text style={styles.storeButtonText}>Visit Store</Text>
                   </TouchableOpacity>
                 </View>
-              )) || (
+              ) : (
+                product?.stores?.map((store: any, index: number) => (
+                  <View key={index} style={styles.storeCard}>
+                    <View style={styles.storeInfo}>
+                      <Text style={styles.storeName}>{store.name}</Text>
+                      <Text style={styles.storePrice}>{store.price}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.storeButton}>
+                      <Text style={styles.storeButtonText}>Visit Store</Text>
+                    </TouchableOpacity>
+                  </View>
+                )) || (
                   <>
                     <View style={styles.storeCard}>
-                      <Text style={styles.storeName}>Amazon</Text>
-                      <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
+                      <View style={styles.storeInfo}>
+                        <Text style={styles.storeName}>Amazon</Text>
+                        <Text style={styles.storePrice}>{formattedPrice}</Text>
+                      </View>
                       <TouchableOpacity style={styles.storeButton}>
                         <Text style={styles.storeButtonText}>Visit Store</Text>
                       </TouchableOpacity>
                     </View>
                     <View style={styles.storeCard}>
-                      <Text style={styles.storeName}>Flipkart</Text>
-                      <Text style={styles.storePrice}>{product?.price || '₹0'}</Text>
+                      <View style={styles.storeInfo}>
+                        <Text style={styles.storeName}>Flipkart</Text>
+                        <Text style={styles.storePrice}>{formattedPrice}</Text>
+                      </View>
                       <TouchableOpacity style={styles.storeButton}>
                         <Text style={styles.storeButtonText}>Visit Store</Text>
                       </TouchableOpacity>
                     </View>
                   </>
-                )}
+                )
+              )}
             </View>
           </View>
         </ScrollView>
@@ -180,9 +246,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   productImage: {
-    width: '80%',
-    height: '100%',
-    resizeMode: 'contain',
+    width: '90%',
+    height: '90%',
   },
   infoSection: {
     padding: 20,
@@ -221,10 +286,34 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginBottom: 4,
   },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
   price: {
     fontSize: 32,
     fontWeight: '700',
     color: '#004225',
+  },
+  originalPrice: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+  },
+  discountBadge: {
+    backgroundColor: '#00A86B',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  discountText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   badgeContainer: {
     marginBottom: 24,
@@ -263,27 +352,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  },
+  storeInfo: {
+    marginBottom: 12,
   },
   storeName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#004225',
-    flex: 1,
+    marginBottom: 4,
   },
   storePrice: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '700',
     color: '#004225',
-    marginRight: 12,
   },
   storeButton: {
     backgroundColor: '#004225',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
   },
   storeButtonText: {
     color: '#FFFFFF',

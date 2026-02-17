@@ -23,6 +23,7 @@ import MainHomeScreen from '../screens/Mainscreen/MainHomeScreen';
 import SearchScreen from '../screens/Mainscreen/SearchScreen';
 import LikeScreen from '../screens/Mainscreen/LikeScreen';
 import ProductDetailScreen from '../screens/Mainscreen/ProductDetailScreen';
+import AllProductsScreen from '../screens/Mainscreen/AllProductsScreen';
 const Stack = createStackNavigator();
 import Toast from 'react-native-toast-message';
 
@@ -66,6 +67,7 @@ const ScreenNavigation = ({ initialRoute }: { initialRoute: string }) => {
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Like" component={LikeScreen} />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+        <Stack.Screen name="AllProducts" component={AllProductsScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

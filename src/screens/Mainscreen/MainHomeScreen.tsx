@@ -10,6 +10,8 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { ResponsiveGreenHeader } from '../../components/CommonComponents';
@@ -18,76 +20,30 @@ import LystraaLogo from '../../assets/home/lystraaLogo.svg';
 import SearchIcon from '../../assets/home/searchfield.svg';
 import ImageHome from '../../assets/home/imagehome.svg';
 import BottomBar from '../../components/BottomBar';
-import IPhone17 from '../../assets/home/iphone17.svg';
-import IPhone17Pro from '../../assets/home/iphone17-pro.svg';
-import GooglePixel from '../../assets/home/google-pixel.svg';
-import Jean from '../../assets/home/jean.svg';
-
-// Product data type
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  imageComponent: React.FC<any>;
-  brandComponent: React.FC<any>;
-  badge?: string;
-}
-
-// Static product data
-const SMART_DEALS: Product[] = [
-  {
-    id: '1',
-    name: 'iPhone 17 Pro',
-    description: '512 GB: 15...',
-    price: '₹1,00,159',
-    imageComponent: IPhone17Pro,
-    brandComponent: IPhone17Pro,
-    badge: 'Lowest Price',
-  },
-  {
-    id: '2',
-    name: "LEVI'S",
-    description: '505 Men Straight...',
-    price: '₹3,159',
-    imageComponent: Jean,
-    brandComponent: Jean,
-    badge: 'Lowest Price',
-  },
-];
-
-const RECENTLY_VIEWED: Product[] = [
-  {
-    id: '3',
-    name: 'Google Pixel',
-    description: 'Cobalt blue...',
-    price: '₹45,999',
-    imageComponent: GooglePixel,
-    brandComponent: GooglePixel,
-  },
-  {
-    id: '4',
-    name: 'iPhone 17',
-    description: '512 GB: 15...',
-    price: '₹89,999',
-    imageComponent: IPhone17,
-    brandComponent: IPhone17,
-  },
-  {
-    id: '5',
-    name: 'iPhone 17 Pro',
-    description: '256 GB: 15...',
-    price: '₹95,159',
-    imageComponent: IPhone17Pro,
-    brandComponent: IPhone17Pro,
-  },
-];
+import { useGetFeaturedProductsQuery, useLazySearchProductsQuery, Product } from '../../api/products/productsApi';
+import { RecentSearches } from '../../components/RecentSearches';
+import { addRecentSearch } from '../../utils/recentSearchStorage';
 
 const MainHomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearchRefresh, setRecentSearchRefresh] = useState(0);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Fetch featured products
+  const { data: smartDeals, isLoading: isLoadingDeals } = useGetFeaturedProductsQuery({ 
+    category: 'iphone' 
+  });
+  const { data: trendingProducts, isLoading: isLoadingTrending } = useGetFeaturedProductsQuery({ 
+    category: 'laptop' 
+  });
+
+  // Search products dynamically
+  const [searchProducts, { data: searchResults, isLoading: isSearchLoading }] = useLazySearchProductsQuery();
 
   useEffect(() => {
     if (isFocused) {
@@ -103,6 +59,30 @@ const MainHomeScreen: React.FC = () => {
 
   const handleProductPress = (product: Product) => {
     navigation.navigate('ProductDetail', { product });
+  };
+
+  const handleSearchPress = async () => {
+    if (searchQuery.trim().length > 0) {
+      console.log('🔍 Searching for:', searchQuery);
+      await addRecentSearch(searchQuery.trim());
+      setIsSearching(true);
+      searchProducts({ query: searchQuery.trim() });
+      setRecentSearchRefresh(prev => prev + 1);
+    }
+  };
+
+  const handleRecentSearchSelect = (search: string) => {
+    setSearchQuery(search);
+    setIsSearchFocused(false);
+    setIsSearching(true);
+    searchProducts({ query: search });
+    addRecentSearch(search);
+    setRecentSearchRefresh(prev => prev + 1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setIsSearching(false);
   };
 
   return (
@@ -121,21 +101,112 @@ const MainHomeScreen: React.FC = () => {
         {/* SEARCH BAR */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <SearchIcon width={20} height={20} style={styles.searchIcon} />
+            <SearchIcon width={24} height={24} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search to compare prices"
               placeholderTextColor="rgba(255, 255, 255, 0.7)"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+              onSubmitEditing={() => {
+                setIsSearchFocused(false);
+                handleSearchPress();
+              }}
+              returnKeyType="search"
             />
+            {isSearching && (
+              <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                <Text style={styles.clearText}>✕</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
 
-      {/* ===== WHITE CARD (NOW SAME AS SEARCHSCREEN) ===== */}
+      {/* ===== WHITE CARD ===== */}
       <View style={[styles.content, { width }]}>
+        {/* Recent Searches Dropdown - Show when search is focused */}
+        {isSearchFocused && !isSearching && (
+          <View style={styles.dropdownWrapper}>
+            <RecentSearches 
+              onSearchSelect={handleRecentSearchSelect}
+              visible={true}
+              refreshTrigger={recentSearchRefresh}
+              asDropdown={true}
+            />
+          </View>
+        )}
+
         {isLoading ? (
           <HomeSkeleton />
+        ) : isSearching ? (
+          // SEARCH RESULTS VIEW
+          <>
+            {isSearchLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#00A86B" />
+                <Text style={styles.loadingText}>Searching products...</Text>
+              </View>
+            ) : (
+              <>
+                {searchResults && searchResults.result.length > 0 && (
+                  <View style={styles.resultsHeader}>
+                    <Text style={styles.resultsText}>
+                      {searchResults.total_result} results for "{searchResults.query}"
+                    </Text>
+                  </View>
+                )}
+                <FlatList
+                  data={searchResults?.result || []}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.searchProductCard}
+                      onPress={() => handleProductPress(item)}
+                    >
+                      <Image 
+                        source={{ uri: item.thumbnail }} 
+                        style={styles.searchProductImage}
+                        resizeMode="contain"
+                      />
+                      {item.discounted && (
+                        <View style={styles.searchDiscountBadge}>
+                          <Text style={styles.discountText}>
+                            {Math.round(((item.original_price - item.current_price) / item.original_price) * 100)}% OFF
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.searchProductInfo}>
+                        <Text style={styles.searchProductName} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <View style={styles.searchPriceContainer}>
+                          <Text style={styles.searchCurrentPrice}>₹{item.current_price.toLocaleString('en-IN')}</Text>
+                          {item.discounted && (
+                            <Text style={styles.searchOriginalPrice}>₹{item.original_price.toLocaleString('en-IN')}</Text>
+                          )}
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                  keyExtractor={(item, index) => `${item.name}-${index}`}
+                  numColumns={2}
+                  columnWrapperStyle={styles.searchRow}
+                  contentContainerStyle={styles.searchListContent}
+                  showsVerticalScrollIndicator={false}
+                  ListEmptyComponent={() => (
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyTitle}>No results found</Text>
+                      <Text style={styles.emptyText}>Try searching for something else</Text>
+                    </View>
+                  )}
+                />
+              </>
+            )}
+          </>
         ) : (
+          // FEATURED PRODUCTS VIEW (DEFAULT)
         <ScrollView
           bounces={false}
           showsVerticalScrollIndicator={false}
@@ -147,83 +218,112 @@ const MainHomeScreen: React.FC = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Smart deals for you</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('AllProducts', { 
+                category: 'iphone', 
+                title: 'Smart deals for you' 
+              })}>
                 <Text style={styles.seeAllText}>See all</Text>
               </TouchableOpacity>
             </View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalScroll}
-            >
-              {SMART_DEALS.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={styles.productCard}
-                  onPress={() => handleProductPress(product)}
-                >
-                  {product.badge && (
-                    <View style={styles.badgeContainer}>
-                      <Text style={styles.badgeText}>{product.badge}</Text>
+            {isLoadingDeals ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#00A86B" />
+              </View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalScroll}
+              >
+                {smartDeals?.result.slice(0, 10).map((product, index) => (
+                  <TouchableOpacity
+                    key={`${product.name}-${index}`}
+                    style={styles.productCard}
+                    onPress={() => handleProductPress(product)}
+                  >
+                    {product.discounted && (
+                      <View style={styles.badgeContainer}>
+                        <Text style={styles.badgeText}>
+                          {Math.round(((product.original_price - product.current_price) / product.original_price) * 100)}% OFF
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.productImageContainer}>
+                      <Image 
+                        source={{ uri: product.thumbnail }} 
+                        style={styles.productImage}
+                      />
                     </View>
-                  )}
-                  <View style={styles.productImageContainer}>
-                    {React.createElement(product.imageComponent, { width: 120, height: 120 })}
-                  </View>
-                  <View style={styles.productInfo}>
-                    {React.createElement(product.brandComponent, { width: 24, height: 24 })}
-                    <Text style={styles.productName} numberOfLines={2}>
-                      {product.name}
-                    </Text>
-                    <Text style={styles.productDesc} numberOfLines={1}>
-                      {product.description}
-                    </Text>
-                    <Text style={styles.productPrice}>{product.price}</Text>
-                    <TouchableOpacity
-                      style={styles.buyButton}
-                      onPress={() => handleProductPress(product)}
-                    >
-                      <Text style={styles.buyButtonText}>Buy Now</Text>
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productName} numberOfLines={2}>
+                        {product.name}
+                      </Text>
+                      <Text style={styles.productPrice}>
+                        ₹{product.current_price.toLocaleString('en-IN')}
+                      </Text>
+                      {product.discounted && (
+                        <Text style={styles.originalPriceText}>
+                          ₹{product.original_price.toLocaleString('en-IN')}
+                        </Text>
+                      )}
+                      <TouchableOpacity
+                        style={styles.buyButton}
+                        onPress={() => handleProductPress(product)}
+                      >
+                        <Text style={styles.buyButtonText}>Buy Now</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
 
-          {/* Recently Viewed Section */}
+          {/* Trending Products Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recently Viewed</Text>
-              <TouchableOpacity>
+              <Text style={styles.sectionTitle}>Trending Products</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('AllProducts', { 
+                category: 'laptop', 
+                title: 'Trending Products' 
+              })}>
                 <Text style={styles.seeAllText}>See all</Text>
               </TouchableOpacity>
             </View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalScroll}
-            >
-              {RECENTLY_VIEWED.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={styles.recentCard}
-                  onPress={() => handleProductPress(product)}
-                >
-                  <View style={styles.recentImageContainer}>
-                    {React.createElement(product.imageComponent, { width: 100, height: 100 })}
-                  </View>
-                  <Text style={styles.recentName} numberOfLines={2}>
-                    {product.name}
-                  </Text>
-                  <Text style={styles.recentDesc} numberOfLines={1}>
-                    {product.description}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {isLoadingTrending ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#00A86B" />
+              </View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalScroll}
+              >
+                {trendingProducts?.result.slice(0, 10).map((product, index) => (
+                  <TouchableOpacity
+                    key={`${product.name}-${index}`}
+                    style={styles.recentCard}
+                    onPress={() => handleProductPress(product)}
+                  >
+                    <View style={styles.recentImageContainer}>
+                      <Image 
+                        source={{ uri: product.thumbnail }} 
+                        style={styles.recentImage}
+                      />
+                    </View>
+                    <Text style={styles.recentName} numberOfLines={2}>
+                      {product.name}
+                    </Text>
+                    <Text style={styles.recentPrice}>
+                      ₹{product.current_price.toLocaleString('en-IN')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
         </ScrollView>
         )}
@@ -257,30 +357,31 @@ const styles = StyleSheet.create({
   searchContainer: {
     position: 'absolute',
     top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 95 : 135,
-    left: 10,
-    right: 10,
+    left: 16,
+    right: 16,
   },
 
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: 52,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
 
   searchIcon: {
-    marginRight: 20,
+    marginRight: 12,
   },
 
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     color: '#FFFFFF',
     padding: 0,
+    height: 52,
   },
 
   /* ===== WHITE CARD NOW SAME AS SEARCHSCREEN ===== */
@@ -382,6 +483,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#004225',
+    marginBottom: 4,
+  },
+  originalPriceText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
     marginBottom: 10,
   },
   buyButton: {
@@ -422,9 +529,130 @@ const styles = StyleSheet.create({
     color: '#004225',
     marginBottom: 2,
   },
+  recentPrice: {
+    fontSize: 14,
+    color: '#004225',
+    fontWeight: '600',
+  },
   recentDesc: {
     fontSize: 12,
     color: '#666666',
+  },
+  
+  /* ===== LOADING STATE ===== */
+  loadingContainer: {
+    paddingVertical: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+
+  /* ===== SEARCH RESULTS ===== */
+  clearButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  clearText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '600',
+    lineHeight: 24,
+  },
+  resultsHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  resultsText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  searchListContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  searchRow: {
+    justifyContent: 'space-between',
+  },
+  searchProductCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  searchProductImage: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#F9FAFB',
+  },
+  searchDiscountBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#00A86B',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  discountText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  searchProductInfo: {
+    padding: 12,
+  },
+  searchProductName: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#111827',
+    marginBottom: 8,
+    minHeight: 34,
+  },
+  searchPriceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  searchCurrentPrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00A86B',
+  },
+  searchOriginalPrice: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  dropdownWrapper: {
+    position: 'relative',
+    zIndex: 1000,
   },
 });
 
